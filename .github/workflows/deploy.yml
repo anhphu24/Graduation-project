@@ -1,0 +1,41 @@
+name: Deploy Django to EC2
+
+on:
+  push:
+    branches:
+      - django-exshop
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Prepare SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2_key.pem
+          chmod 600 ~/.ssh/ec2_key.pem
+          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy to EC2
+        run: |
+          ssh -i ~/.ssh/ec2_key.pem \
+          "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" << 'EOF'
+
+          set -e
+
+          cd /home/ec2-user/Graduation-project
+
+          git checkout django-exshop
+          git pull --ff-only origin django-exshop
+
+          source venv/bin/activate
+          python -m pip install -r requirements.txt
+
+          cd exShop
+          python manage.py migrate --noinput
+          python manage.py collectstatic --noinput
+
+          sudo systemctl restart django_exshop
+
+          EOF
