@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ログアウト確認 | 食品ロス削減アプリ</title>
+
+    <link rel="stylesheet" href="../css/style.css">
+
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: #f7f4ee;
+            font-family: "Noto Sans JP", sans-serif;
+            color: #26332f;
+        }
+
+        .logout-header {
+            background: white;
+            padding: 20px 6%;
+            border-bottom: 1px solid #e1e8e2;
+        }
+
+        .logout-logo {
+            color: #146c5b;
+            font-size: 21px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .logout-container {
+            min-height: 75vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+        }
+
+        .logout-card {
+            width: 100%;
+            max-width: 420px;
+            background: white;
+            padding: 40px 30px;
+            border-radius: 12px;
+            border: 1px solid #e1e8e2;
+            text-align: center;
+        }
+
+        .logout-card h1 {
+            font-size: 24px;
+            color: #146c5b;
+            margin-bottom: 20px;
+        }
+
+        .logout-card p {
+            font-size: 15px;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+
+        .logout-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .logout-button {
+            display: block;
+            padding: 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 15px;
+            text-align: center;
+        }
+
+        .confirm-button {
+            background: #146c5b;
+            color: white;
+        }
+
+        .confirm-button:hover {
+            background: #0f584a;
+        }
+
+        .cancel-button {
+            background: #f1f4f1;
+            color: #26332f;
+            border: 1px solid #d5ddd6;
+        }
+
+        .cancel-button:hover {
+            background: #e6ece6;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="logout-header">
+        <a href="top.html" class="logout-logo">
+            🌿 食品ロス削減
+        </a>
+    </header>
+
+    <main class="logout-container">
+
+        <section class="logout-card">
+
+            <h1>ログアウト確認</h1>
+
+            <p>
+                ログアウトしますか？
+            </p>
+
+            <div class="logout-buttons">
+
+                <a href="login.html"
+                   class="logout-button confirm-button">
+                    ログアウトする
+                </a>
+
+                <a href="mypage.html"
+                   class="logout-button cancel-button">
+                    キャンセル
+                </a>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</body>
+</html>
