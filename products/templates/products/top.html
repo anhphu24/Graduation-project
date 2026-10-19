@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}トップ | 食品ロス削減アプリ{% endblock %}
+
+{% block body_class %}top-page{% endblock %}
+
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/top.css' %}">{% endblock %}
+
+{% block body %}
+<!-- ===== ヘッダー ===== -->
+
+    <header class="top-header">
+      <a href="{% url 'products:top' %}" class="top-logo"> 🌿 食品ロス削減 </a>
+
+      {% include 'includes/navbar.html' %}
+    </header>
+
+    <!-- ===== メイン ===== -->
+
+    <main class="top-main">
+      <h1 class="page-title">トップ</h1>
+
+      <!-- ===== 検索エリア ===== -->
+
+      <div class="search-area">
+        <!-- 商品検索 -->
+
+        <section class="search-box">
+          <h2>🔍 商品を探す</h2>
+
+          <form class="search-form" action="{% url 'products:list' %}" method="get">
+            <input
+              type="search"
+              name="q"
+              placeholder="商品名を入力"
+              aria-label="商品名を入力"
+              required
+            />
+
+            <button type="submit">検索</button>
+          </form>
+        </section>
+
+        <!-- 近くの店舗検索 -->
+
+        <section class="search-box">
+          <h2>📍 近くの店舗を探す</h2>
+
+          <button type="button" class="location-button" id="locationButton">
+            現在地から店舗を探す
+          </button>
+
+          <p
+            id="locationMessage"
+            class="location-message"
+            role="status"
+            aria-live="polite"
+          ></p>
+        </section>
+      </div>
+
+      <!-- ===== セール中の商品 ===== -->
+
+      <section id="products">
+        <div class="section-heading">
+          <h2 class="section-title">セール中の商品</h2>
+        </div>
+
+        <p class="section-description">
+          カテゴリーごとに、現在販売中のセール商品をご紹介します。
+        </p>
+
+        <div class="product-grid">
+          <!-- ① パン類 -->
+
+          <article class="product-card">
+            <div class="category-header">
+              <span class="category-label"> 🍞 パン類 </span>
+            </div>
+
+            <div class="product-image">
+              <img src="{% static 'images/bread.jpg' %}" onerror="this.onerror=null;this.src='{% static 'images/placeholder.svg' %}'" alt="パンセット" />
+            </div>
+
+            <div class="product-info">
+              <h3>パンセット</h3>
+
+              <p class="shop-name">○○ベーカリー</p>
+
+              <span class="old-price"> 500円 </span>
+
+              <p class="new-price">300円</p>
+
+              <a href="{% url 'products:detail' %}" class="detail-button">
+                詳細を見る
+              </a>
+            </div>
+          </article>
+
+          <!-- ② 弁当・惣菜 -->
+
+          <article class="product-card">
+            <div class="category-header">
+              <span class="category-label"> 🍱 弁当・惣菜 </span>
+            </div>
+
+            <div class="product-image">
+              <img src="{% static 'images/bento.jpg' %}" onerror="this.onerror=null;this.src='{% static 'images/placeholder.svg' %}'" alt="日替わり弁当" />
+            </div>
+
+            <div class="product-info">
+              <h3>日替わり弁当</h3>
+
+              <p class="shop-name">○○スーパー</p>
+
+              <span class="old-price"> 650円 </span>
+
+              <p class="new-price">400円</p>
+
+              <a href="{% url 'products:detail' %}" class="detail-button">
+                詳細を見る
+              </a>
+            </div>
+          </article>
+
+          <!-- ③ 野菜・果物 -->
+
+          <article class="product-card">
+            <div class="category-header">
+              <span class="category-label"> 🥬 野菜・果物 </span>
+            </div>
+
+            <div class="product-image">
+              <img src="{% static 'images/salad.jpg' %}" onerror="this.onerror=null;this.src='{% static 'images/placeholder.svg' %}'" alt="サラダセット" />
+            </div>
+
+            <div class="product-info">
+              <h3>サラダセット</h3>
+
+              <p class="shop-name">○○デリ</p>
+
+              <span class="old-price"> 450円 </span>
+
+              <p class="new-price">250円</p>
+
+              <a href="{% url 'products:detail' %}" class="detail-button">
+                詳細を見る
+              </a>
+            </div>
+          </article>
+
+          <!-- ④ 飲料・乳製品 -->
+
+          <article class="product-card">
+            <div class="category-header">
+              <span class="category-label"> 🥛 飲料・乳製品 </span>
+            </div>
+
+            <div class="product-image">
+              <img src="{% static 'images/juice.jpg' %}" onerror="this.onerror=null;this.src='{% static 'images/placeholder.svg' %}'" alt="牛乳" />
+            </div>
+
+            <div class="product-info">
+              <h3>牛乳</h3>
+
+              <p class="shop-name">○○スーパー</p>
+
+              <span class="old-price"> 150円 </span>
+
+              <p class="new-price">100円</p>
+
+              <a href="{% url 'products:detail' %}" class="detail-button">
+                詳細を見る
+              </a>
+            </div>
+          </article>
+
+          <!-- ⑤ デザート -->
+
+          <article class="product-card">
+            <div class="category-header">
+              <span class="category-label"> 🍮 デザート </span>
+            </div>
+
+            <div class="product-image">
+              <img src="{% static 'images/dessert.jpg' %}" onerror="this.onerror=null;this.src='{% static 'images/placeholder.svg' %}'" alt="ケーキ" />
+            </div>
+
+            <div class="product-info">
+              <h3>ケーキ</h3>
+
+              <p class="shop-name">○○スーパー</p>
+
+              <span class="old-price"> 800円 </span>
+
+              <p class="new-price">500円</p>
+
+              <a href="{% url 'products:detail' %}" class="detail-button">
+                詳細を見る
+              </a>
+            </div>
+          </article>
+        </div>
+
+        <!-- 商品一覧へ -->
+
+        <div class="all-products">
+          <a href="{% url 'products:list' %}"> 商品一覧を見る → </a>
+        </div>
+      </section>
+    </main>
+
+    <!-- ===== フッター ===== -->
+
+    <footer class="top-footer">食品ロス削減アプリ</footer>
+
+    <!-- ===== 現在地取得 ===== -->
+{% endblock %}
+
+{% block extra_js %}<script defer src="{% static 'js/top.js' %}"></script>{% endblock %}

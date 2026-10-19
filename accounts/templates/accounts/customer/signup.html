@@ -1,0 +1,371 @@
+{% extends 'customer_base.html' %}
+{% load static %}
+
+{% block title %}新規会員登録｜食品ロス削減アプリ{% endblock %}
+
+{% block extra_css %}
+<style>
+  .form-errors {
+    background-color: #fff0ed;
+    color: #c0392b;
+    border: 1px solid #f5b7b1;
+    border-radius: 12px;
+    padding: 15px;
+    margin-top: 20px;
+    font-size: 13px;
+    line-height: 1.8;
+  }
+
+  .form-errors strong {
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .form-errors p {
+    margin: 5px 0;
+  }
+</style>
+{% endblock %}
+
+{% block page_content %}
+
+<main class="page">
+
+  <!-- ========================== -->
+  <!-- 左側：紹介エリア -->
+  <!-- ========================== -->
+
+  <section class="hero">
+
+    <span class="tag">🌿 FOOD RESCUE</span>
+
+    <h1>
+      まだおいしいを、<br />
+      <em>もっと身近に。</em>
+    </h1>
+
+    <p>
+      おトクに選んで、おいしく楽しむ。
+      毎日の小さな選択が、食品ロスを減らす一歩に。
+    </p>
+
+    <div class="illustration" aria-hidden="true">
+      <div class="blob"></div>
+      <span class="leaf one">🌿</span>
+      <span class="food">🥕</span>
+      <span class="leaf two">🍃</span>
+    </div>
+
+  </section>
+
+
+  <!-- ========================== -->
+  <!-- 右側：新規会員登録フォーム -->
+  <!-- ========================== -->
+
+  <section class="auth-card signup">
+
+    <h2>新規会員登録</h2>
+
+    <p class="subtitle">
+      アカウントを作成して、おトクな食品を見つけましょう！
+    </p>
+
+
+    <!-- Django Form -->
+
+    <form method="POST"
+          action="{% url 'accounts:customer_signup' %}">
+
+      {% csrf_token %}
+
+
+      <!-- ========================== -->
+      <!-- 氏名 -->
+      <!-- ========================== -->
+
+      <div class="two">
+
+        <div class="field">
+
+          <label for="family">姓</label>
+
+          <input
+            id="family"
+            name="family"
+            type="text"
+            placeholder="山田"
+            value="{{ form.family.value|default_if_none:'' }}"
+            maxlength="100"
+            required
+          />
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="given">名</label>
+
+          <input
+            id="given"
+            name="given"
+            type="text"
+            placeholder="花子"
+            value="{{ form.given.value|default_if_none:'' }}"
+            maxlength="100"
+            required
+          />
+
+        </div>
+
+      </div>
+
+
+      <!-- ========================== -->
+      <!-- フリガナ -->
+      <!-- ========================== -->
+
+      <div class="two">
+
+        <div class="field">
+
+          <label for="family_kana">
+            セイ（カタカナ）
+          </label>
+
+          <input
+            id="family_kana"
+            name="family_kana"
+            type="text"
+            placeholder="ヤマダ"
+            value="{{ form.family_kana.value|default_if_none:'' }}"
+            maxlength="100"
+            required
+          />
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="given_kana">
+            メイ（カタカナ）
+          </label>
+
+          <input
+            id="given_kana"
+            name="given_kana"
+            type="text"
+            placeholder="ハナコ"
+            value="{{ form.given_kana.value|default_if_none:'' }}"
+            maxlength="100"
+            required
+          />
+
+        </div>
+
+      </div>
+
+
+      <!-- ========================== -->
+      <!-- メールアドレス -->
+      <!-- ========================== -->
+
+      <div class="field">
+
+        <label for="email">
+          メールアドレス
+        </label>
+
+        <input
+          id="email"
+          name="email"
+          type="email"
+          placeholder="example@email.com"
+          value="{{ form.email.value|default_if_none:'' }}"
+          maxlength="150"
+          required
+          autocomplete="email"
+        />
+
+      </div>
+
+
+      <!-- ========================== -->
+      <!-- パスワード -->
+      <!-- ========================== -->
+
+      <div class="field">
+
+        <label for="password">
+          パスワード
+        </label>
+
+        <input
+          id="password"
+          name="password"
+          type="password"
+          placeholder="8文字以上"
+          minlength="8"
+          required
+          autocomplete="new-password"
+        />
+
+      </div>
+
+
+      <!-- ========================== -->
+      <!-- パスワード確認 -->
+      <!-- ========================== -->
+
+      <div class="field">
+
+        <label for="password_confirm">
+          パスワード（確認）
+        </label>
+
+        <input
+          id="password_confirm"
+          name="password_confirm"
+          type="password"
+          placeholder="もう一度入力"
+          minlength="8"
+          required
+          autocomplete="new-password"
+        />
+
+      </div>
+
+
+      <!-- ========================== -->
+      <!-- 性別 -->
+      <!-- ========================== -->
+
+      <span class="label">
+        性別（必須）
+      </span>
+
+      <div class="options"
+           role="group"
+           aria-label="性別（必須）">
+
+        <label class="option">
+
+          <input
+            type="radio"
+            name="gender"
+            value="male"
+            {% if form.gender.value == 'male' %}checked{% endif %}
+            required
+          />
+
+          男性
+
+        </label>
+
+
+        <label class="option">
+
+          <input
+            type="radio"
+            name="gender"
+            value="female"
+            {% if form.gender.value == 'female' %}checked{% endif %}
+          />
+
+          女性
+
+        </label>
+
+
+        <label class="option">
+
+          <input
+            type="radio"
+            name="gender"
+            value="other"
+            {% if form.gender.value == 'other' %}checked{% endif %}
+          />
+
+          その他
+
+        </label>
+
+      </div>
+
+
+      <!-- ========================== -->
+      <!-- エラーメッセージ -->
+      <!-- ========================== -->
+
+      {% if form.errors %}
+
+      <div class="form-errors" role="alert">
+
+        <strong>
+          入力内容をご確認ください。
+        </strong>
+
+        {% for field in form %}
+
+          {% for error in field.errors %}
+
+            <p>
+              {{ field.label }}：{{ error }}
+            </p>
+
+          {% endfor %}
+
+        {% endfor %}
+
+
+        {% for error in form.non_field_errors %}
+
+          <p>{{ error }}</p>
+
+        {% endfor %}
+
+      </div>
+
+      {% endif %}
+
+
+      <!-- ========================== -->
+      <!-- 登録ボタン -->
+      <!-- ========================== -->
+
+      <button
+        type="submit"
+        class="btn coral"
+        style="margin-top: 25px"
+      >
+
+        登録する
+
+        <span aria-hidden="true">→</span>
+
+      </button>
+
+    </form>
+
+
+    <!-- ========================== -->
+    <!-- ログイン画面へ -->
+    <!-- ========================== -->
+
+    <p class="footnote">
+
+      すでにアカウントをお持ちの方
+
+      <a href="{% url 'accounts:customer_login' %}">
+        ログイン
+      </a>
+
+    </p>
+
+  </section>
+
+</main>
+
+{% endblock %}

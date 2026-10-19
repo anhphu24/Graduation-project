@@ -1,0 +1,60 @@
+{% extends 'customer_base.html' %}
+
+{% load static %}
+
+{% block title %}ログイン｜食品ロス削減アプリ{% endblock %}
+
+{% block page_content %}
+<main class="page">
+      <section class="hero">
+        <span class="tag">🌿 FOOD RESCUE</span>
+        <h1>まだおいしいを、<br /><em>もっと身近に。</em></h1>
+        <p>
+          おトクに選んで、おいしく楽しむ。毎日の小さな選択が、食品ロスを減らす一歩に。
+        </p>
+        <div class="illustration" aria-hidden="true">
+          <div class="blob"></div>
+          <span class="leaf one">🌿</span><span class="food">🛍️</span
+          ><span class="leaf two">🍃</span>
+        </div>
+      </section>
+      <section class="auth-card">
+        <h2>おかえりなさい！</h2>
+        <p class="subtitle">アカウントにログインしてください。</p>
+        <form data-demo>
+          <div class="field">
+            <label for="email">メールアドレス</label
+            ><input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="example@email.com"
+              required
+              autocomplete="username"
+            />
+          </div>
+          <div class="field">
+            <label for="password">パスワード</label
+            ><input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="8文字以上"
+              required
+              autocomplete="current-password"
+            />
+          </div>
+          <div class="field-row">
+            <a href="{% url 'accounts:customer_forgot' %}">パスワードを忘れた方</a>
+          </div>
+          <button type="submit" class="btn">
+            ログインする <span aria-hidden="true">→</span>
+          </button>
+          <p class="message" role="status" aria-live="polite"></p>
+        </form>
+        <div class="separator">アカウントをお持ちでない方</div>
+        <a class="btn outline" href="{% url 'accounts:customer_signup' %}">新規会員登録 →</a>
+        <p class="footnote"><a href="{% url 'core:contact' %}">お問い合わせ</a></p>
+      </section>
+    </main>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}食品ロス削減｜入口{% endblock %}
+
+{% block body_class %}{% endblock %}
+
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/entry.css' %}">{% endblock %}
+
+{% block body %}
+<main class="entry-wrap">
+      <div class="entry-panel">
+        <div class="entry-logo" aria-hidden="true">🌿</div>
+        <h1 class="entry-title">食品ロス削減</h1>
+        <p class="entry-sub">おいしいを、ムダにしない。</p>
+        <div class="entry-cards">
+          <a
+            class="entry-card"
+            href="{% url 'accounts:customer_login' %}"
+            aria-label="利用者のログイン画面へ"
+            ><span class="entry-icon" aria-hidden="true">🛍️</span>
+            <h2>利用者の方</h2>
+            <p>おトクな食品を探して、<br />毎日のお買い物をもっと楽しく。</p>
+            <span class="entry-action">利用者ログインへ →</span></a
+          ><a
+            class="entry-card"
+            href="{% url 'accounts:shop_login' %}"
+            aria-label="店舗のログイン画面へ"
+            ><span class="entry-icon" aria-hidden="true">🏪</span>
+            <h2>店舗の方</h2>
+            <p>商品の登録や予約の確認など、<br />お店の管理はこちらから。</p>
+            <span class="entry-action">店舗ログインへ →</span></a
+          >
+        </div>
+        <p class="entry-foot">ご利用になる方を選択してください。</p>
+      </div>
+    </main>
+{% endblock %}

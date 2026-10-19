@@ -1,0 +1,10 @@
+<header class="topbar">
+  <a class="brand" href="{% if portal == 'shop' %}{% url 'accounts:shop_login' %}{% else %}{% url 'accounts:customer_login' %}{% endif %}">
+    <span class="brand-mark">✿</span>
+    <span>食品ロス削減
+      <span style="display:block;font-size:10px;font-weight:500">
+        {% if portal == 'shop' %}店舗管理システム{% else %}おいしいを、ムダにしない。{% endif %}
+      </span>
+    </span>
+  </a>
+</header>
