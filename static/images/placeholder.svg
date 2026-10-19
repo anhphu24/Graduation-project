@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" role="img" aria-label="商品画像は準備中です">
+ <rect width="640" height="400" fill="#e4eee5"/>
+ <circle cx="320" cy="170" r="82" fill="#c6dfd0"/>
+ <text x="320" y="192" fill="#146c5b" text-anchor="middle" font-size="67" font-family="Arial, sans-serif">✿</text>
+ <text x="320" y="310" fill="#146c5b" text-anchor="middle" font-size="26" font-family="Arial, sans-serif">商品画像は準備中です</text>
+</svg>

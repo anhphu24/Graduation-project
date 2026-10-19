@@ -1,0 +1,56 @@
+{% extends 'shop_base.html' %}
+
+{% load static %}
+
+{% block title %}店舗ログイン｜食品ロス削減アプリ{% endblock %}
+
+{% block page_content %}
+<main class="page">
+      <section class="hero">
+        <span class="tag">🏪 SHOP PARTNER</span>
+        <h1>お店の「もったいない」を<br /><em>価値に変える。</em></h1>
+        <p>商品と予約をスマートに管理。食品ロスを減らす、新しいお店の習慣。</p>
+        <div class="illustration" aria-hidden="true">
+          <div class="blob"></div>
+          <span class="leaf one">🌿</span><span class="food">🏪</span
+          ><span class="leaf two">🍃</span>
+        </div>
+      </section>
+      <section class="auth-card">
+        <h2>店舗ログイン</h2>
+        <p class="subtitle">お店の管理画面にログインします。</p>
+        <form data-demo>
+          <div class="field">
+            <label for="email">メールアドレス</label
+            ><input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="example@email.com"
+              required
+              autocomplete="username"
+            />
+          </div>
+          <div class="field">
+            <label for="password">パスワード</label
+            ><input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="8文字以上"
+              required
+              autocomplete="current-password"
+            />
+          </div>
+          <div class="field-row">
+            <a href="{% url 'accounts:shop_forgot' %}">パスワードを忘れた方</a>
+          </div>
+          <button type="submit" class="btn">
+            ログインする <span aria-hidden="true">→</span>
+          </button>
+          <p class="message" role="status" aria-live="polite"></p>
+        </form>
+        <p class="footnote"><a href="{% url 'core:shop_contact' %}">お問い合わせ</a></p>
+      </section>
+    </main>
+{% endblock %}

@@ -1,0 +1,21 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Database and secrets
+/db.sqlite3
+.env
+.env.*
+!.env.example
+
+# Uploaded and collected assets
+/media/
+/staticfiles/
+
+# Editor & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
