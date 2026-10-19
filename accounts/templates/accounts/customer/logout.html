@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}ログアウト確認 | 食品ロス削減アプリ{% endblock %}
+
+{% block body_class %}{% endblock %}
+
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/logout.css' %}">{% endblock %}
+
+{% block body %}
+<header class="logout-header">
+      <a href="{% url 'products:top' %}" class="logout-logo"> 🌿 食品ロス削減 </a>
+    </header>
+
+    <main class="logout-container">
+      <section class="logout-card">
+        <h1>ログアウト確認</h1>
+
+        <p>ログアウトしますか？</p>
+
+        <div class="logout-buttons">
+          <a href="{% url 'accounts:customer_login' %}" class="logout-button confirm-button">
+            ログアウトする
+          </a>
+
+          <a href="{% url 'accounts:mypage' %}" class="logout-button cancel-button">
+            キャンセル
+          </a>
+        </div>
+      </section>
+    </main>
+{% endblock %}

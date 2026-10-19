@@ -1,0 +1,43 @@
+{% extends 'shop_base.html' %}
+
+{% load static %}
+
+{% block title %}パスワード再設定｜食品ロス削減アプリ{% endblock %}
+
+{% block page_content %}
+<main class="page">
+      <section class="hero">
+        <span class="tag">🏪 SHOP PARTNER</span>
+        <h1>お店の「もったいない」を<br /><em>価値に変える。</em></h1>
+        <p>商品と予約をスマートに管理。食品ロスを減らす、新しいお店の習慣。</p>
+        <div class="illustration" aria-hidden="true">
+          <div class="blob"></div>
+          <span class="leaf one">🌿</span><span class="food">✉️</span
+          ><span class="leaf two">🍃</span>
+        </div>
+      </section>
+      <section class="auth-card">
+        <h2>パスワードの再設定</h2>
+        <p class="subtitle">
+          ご登録のメールアドレスに再設定用リンクをお送りします。
+        </p>
+        <form data-demo>
+          <div class="field">
+            <label for="email">登録済みメールアドレス</label
+            ><input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="example@email.com"
+              required
+            />
+          </div>
+          <button type="submit" class="btn">
+            再設定用リンクを送信 <span aria-hidden="true">→</span>
+          </button>
+          <p class="message" role="status" aria-live="polite"></p>
+        </form>
+        <p class="footnote"><a href="{% url 'accounts:shop_login' %}">← ログイン画面に戻る</a></p>
+      </section>
+    </main>
+{% endblock %}

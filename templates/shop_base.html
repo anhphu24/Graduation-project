@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block body_class %}shop{% endblock %}
+{% block body %}
+  {% include 'includes/header.html' with portal='shop' %}
+  {% block page_content %}{% endblock %}
+{% endblock %}
+{% block extra_js %}
+  <script defer src="{% static 'js/demo.js' %}"></script>
+{% endblock %}
