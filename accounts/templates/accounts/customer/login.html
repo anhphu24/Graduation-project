@@ -1,60 +1,162 @@
 {% extends 'customer_base.html' %}
-
 {% load static %}
 
-{% block title %}ログイン｜食品ロス削減アプリ{% endblock %}
+{% block title %}
+ログイン｜食品ロス削減アプリ
+{% endblock %}
 
 {% block page_content %}
+
 <main class="page">
-      <section class="hero">
+
+    <!-- 左側：紹介エリア -->
+    <section class="hero">
+
         <span class="tag">🌿 FOOD RESCUE</span>
-        <h1>まだおいしいを、<br /><em>もっと身近に。</em></h1>
+
+        <h1>
+            まだおいしいを、<br />
+            <em>もっと身近に。</em>
+        </h1>
+
         <p>
-          おトクに選んで、おいしく楽しむ。毎日の小さな選択が、食品ロスを減らす一歩に。
+            おトクに選んで、おいしく楽しむ。
+            毎日の小さな選択が、食品ロスを減らす一歩に。
         </p>
+
         <div class="illustration" aria-hidden="true">
-          <div class="blob"></div>
-          <span class="leaf one">🌿</span><span class="food">🛍️</span
-          ><span class="leaf two">🍃</span>
+            <div class="blob"></div>
+
+            <span class="leaf one">🌿</span>
+            <span class="food">🛍️</span>
+            <span class="leaf two">🍃</span>
         </div>
-      </section>
-      <section class="auth-card">
+
+    </section>
+
+
+    <!-- 右側：ログインフォーム -->
+    <section class="auth-card">
+
         <h2>おかえりなさい！</h2>
-        <p class="subtitle">アカウントにログインしてください。</p>
-        <form data-demo>
-          <div class="field">
-            <label for="email">メールアドレス</label
-            ><input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="example@email.com"
-              required
-              autocomplete="username"
-            />
-          </div>
-          <div class="field">
-            <label for="password">パスワード</label
-            ><input
-              id="password"
-              name="password"
-              type="password"
-              placeholder="8文字以上"
-              required
-              autocomplete="current-password"
-            />
-          </div>
-          <div class="field-row">
-            <a href="{% url 'accounts:customer_forgot' %}">パスワードを忘れた方</a>
-          </div>
-          <button type="submit" class="btn">
-            ログインする <span aria-hidden="true">→</span>
-          </button>
-          <p class="message" role="status" aria-live="polite"></p>
+
+        <p class="subtitle">
+            アカウントにログインしてください。
+        </p>
+
+        <!-- Django Login Form -->
+        <form method="POST"
+              action="{% url 'accounts:customer_login' %}">
+
+            {% csrf_token %}
+
+            <!-- メールアドレス -->
+            <div class="field">
+
+                <label for="email">
+                    メールアドレス
+                </label>
+
+                <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="example@email.com"
+                    value="{{ form.email.value|default_if_none:'' }}"
+                    required
+                    autocomplete="username"
+                />
+
+            </div>
+
+
+            <!-- パスワード -->
+            <div class="field">
+
+                <label for="password">
+                    パスワード
+                </label>
+
+                <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    placeholder="パスワードを入力"
+                    required
+                    autocomplete="current-password"
+                />
+
+            </div>
+
+
+            <!-- パスワード再設定 -->
+            <div class="field-row">
+
+                <a href="{% url 'accounts:customer_forgot' %}">
+                    パスワードを忘れた方
+                </a>
+
+            </div>
+
+
+            <!-- エラーメッセージ -->
+            {% if form.errors %}
+
+            <div class="message" role="alert">
+
+                {% for field in form %}
+
+                    {% for error in field.errors %}
+                        <p>{{ field.label }}：{{ error }}</p>
+                    {% endfor %}
+
+                {% endfor %}
+
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+
+            </div>
+
+            {% endif %}
+
+
+            <!-- ログインボタン -->
+            <button type="submit" class="btn">
+
+                ログインする
+
+                <span aria-hidden="true">→</span>
+
+            </button>
+
         </form>
-        <div class="separator">アカウントをお持ちでない方</div>
-        <a class="btn outline" href="{% url 'accounts:customer_signup' %}">新規会員登録 →</a>
-        <p class="footnote"><a href="{% url 'core:contact' %}">お問い合わせ</a></p>
-      </section>
-    </main>
+
+
+        <div class="separator">
+            アカウントをお持ちでない方
+        </div>
+
+
+        <!-- 新規会員登録 -->
+        <a
+            class="btn outline"
+            href="{% url 'accounts:customer_signup' %}"
+        >
+            新規会員登録 →
+        </a>
+
+
+        <p class="footnote">
+
+            <a href="{% url 'core:contact' %}">
+                お問い合わせ
+            </a>
+
+        </p>
+
+    </section>
+
+</main>
+
 {% endblock %}

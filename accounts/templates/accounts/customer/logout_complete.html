@@ -1,0 +1,74 @@
+{% extends 'customer_base.html' %}
+
+{% load static %}
+
+{% block title %}ログアウト完了｜食品ロス削減アプリ{% endblock %}
+
+{% block page_content %}
+
+<main class="page">
+
+    <!-- 左側の紹介エリア -->
+    <section class="hero">
+        <span class="tag">🌿 FOOD RESCUE</span>
+
+        <h1>
+            まだおいしいを、<br />
+            <em>もっと身近に。</em>
+        </h1>
+
+        <p>
+            おトクに選んで、おいしく楽しむ。
+            毎日の小さな選択が、食品ロスを減らす一歩に。
+        </p>
+
+        <div class="illustration" aria-hidden="true">
+            <div class="blob"></div>
+            <span class="leaf one">🌿</span>
+            <span class="food">🥕</span>
+            <span class="leaf two">🍃</span>
+        </div>
+    </section>
+
+    <!-- ログアウト完了エリア -->
+    <section class="auth-card signup">
+
+        <div style="text-align: center; padding: 30px 10px;">
+
+            <!-- 完了アイコン -->
+            <div style="
+                width: 80px;
+                height: 80px;
+                margin: 0 auto 25px;
+                border-radius: 50%;
+                background-color: #e3f3e9;
+                color: #146C5B;
+                font-size: 42px;
+                line-height: 80px;
+            ">
+                ✓
+            </div>
+
+            <h2 style="color: #146C5B;">
+                ログアウトが完了しました
+            </h2>
+
+            <!-- ログイン画面へ移動 -->
+            <a href="{% url 'accounts:customer_login' %}"
+               class="btn coral"
+               style="
+                   display: block;
+                   margin-top: 25px;
+                   text-decoration: none;
+               ">
+                ログイン画面へ
+                <span aria-hidden="true">→</span>
+            </a>
+
+        </div>
+
+    </section>
+
+</main>
+
+{% endblock %}
