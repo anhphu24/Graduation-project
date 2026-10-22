@@ -1,9 +1,13 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import get_user_model
+from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.db import transaction, IntegrityError
 
-from .forms import CustomerSignupForm
+from .forms import CustomerSignupForm, CustomerLoginForm
+from django.shortcuts import render, redirect
+from django.views.decorators.http import require_http_methods
 from .models import Profile
+
 
 
 User = get_user_model()
@@ -53,8 +57,8 @@ def customer_signup(request):
                 )
 
             else:
-                # 登録成功 → ログイン画面
-                return redirect('accounts:customer_login')
+                # 登録成功 → 登録完了画面
+                return redirect('accounts:customer_signup_success')
 
     # GET：登録画面を表示
     else:
@@ -66,15 +70,81 @@ def customer_signup(request):
         {'form': form}
     )
 
+# ==============================
+# 一般利用者：新規会員登録完了
+# ==============================
+
+def customer_signup_success(request):
+    return render(
+        request,
+        'accounts/customer/signup_success.html'
+    )
 
 # ==============================
-# 一般利用者：ログイン
+# 一般利用者：ログイン処理
 # ==============================
 
 def customer_login(request):
+
+    # ログイン済みの場合
+    if request.user.is_authenticated:
+
+        profile = getattr(request.user, 'profile', None)
+
+        if profile and profile.role == 'customer':
+            return redirect('products:top')
+
+    # ログインフォーム
+    if request.method == 'POST':
+
+        form = CustomerLoginForm(request.POST)
+
+        if form.is_valid():
+
+            email = form.cleaned_data['email'].strip().lower()
+            password = form.cleaned_data['password']
+
+            # ユーザー認証
+            user = authenticate(
+                request,
+                username=email,
+                password=password
+            )
+
+            if user is None:
+
+                form.add_error(
+                    None,
+                    'メールアドレスまたはパスワードが正しくありません。'
+                )
+
+            else:
+
+                # アカウント種別を確認
+                profile = getattr(user, 'profile', None)
+
+                if profile is None or profile.role != 'customer':
+
+                    form.add_error(
+                        None,
+                        'このアカウントでは利用者用画面にログインできません。'
+                    )
+
+                else:
+
+                    # ログインセッション作成
+                    auth_login(request, user)
+
+                    # 商品トップページへ
+                    return redirect('products:top')
+
+    else:
+        form = CustomerLoginForm()
+
     return render(
         request,
-        'accounts/customer/login.html'
+        'accounts/customer/login.html',
+        {'form': form}
     )
 
 
@@ -89,15 +159,28 @@ def customer_forgot(request):
     )
 
 
-# ==============================
-# 一般利用者：ログアウト
-# ==============================
+from django.contrib.auth import logout as auth_logout
+from django.shortcuts import render, redirect
+from django.views.decorators.http import require_POST
 
+
+# ログアウト処理
+@require_POST
 def customer_logout(request):
+
+    auth_logout(request)
+
+    return redirect('accounts:customer_logout_complete')
+
+
+# ログアウト完了画面
+def customer_logout_complete(request):
+
     return render(
         request,
         'accounts/customer/logout.html'
     )
+
 
 
 # ==============================
