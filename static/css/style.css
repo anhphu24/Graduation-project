@@ -603,4 +603,29 @@ a:hover {
     transition: none !important;
     scroll-behavior: auto !important;
   }
+
+/*　ユーザー名 */
+.top-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.top-logo {
+    color: #146c5b;
+    font-size: 21px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.user-name {
+    font-size: 14px;
+    color: #26332f;
+    white-space: nowrap;
+    margin: 0;
+}
+```
+
 }
