@@ -118,3 +118,21 @@ class CustomerSignupForm(forms.Form):
                 self.add_error('password', error)
 
         return cleaned_data
+
+# ==============================
+# 一般利用者：ログインフォーム
+# ==============================
+
+class CustomerLoginForm(forms.Form):
+
+    email = forms.EmailField(
+        label='メールアドレス',
+        max_length=150,
+        required=True
+    )
+
+    password = forms.CharField(
+        label='パスワード',
+        widget=forms.PasswordInput,
+        required=True
+    )
