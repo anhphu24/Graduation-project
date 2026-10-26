@@ -1,6 +1,8 @@
 from django.shortcuts import render
+from accounts.decorators import customer_required
 
 
+@customer_required
 def create(request):
     return render(request, 'reservations/create.html')
 

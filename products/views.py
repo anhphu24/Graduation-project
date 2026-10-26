@@ -1,6 +1,8 @@
 from django.shortcuts import render
+from accounts.decorators import customer_required
 
 
+@customer_required
 def top(request):
     return render(request, 'products/top.html')
 
