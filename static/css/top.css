@@ -1,340 +1,410 @@
-/* UIUX サンプル customer/top.html から移動 */
-
       /* ===== ページ全体 ===== */
-
       .top-page {
-        margin: 0;
-        min-height: 100vh;
-        background: #f7f4ee;
-        color: #26332f;
-        font-family: "Noto Sans JP", sans-serif;
+          margin: 0;
+          min-height: 100vh;
+          background: #f7f4ee;
+          color: #26332f;
+          font-family: "Noto Sans JP", sans-serif;
       }
 
       .top-page * {
-        box-sizing: border-box;
+          box-sizing: border-box;
       }
 
       /* ===== ヘッダー ===== */
-
       .top-header {
-        background: #ffffff;
-        border-bottom: 1px solid #e1e8e2;
-        padding: 18px 6%;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 20px;
+          background: #ffffff;
+          border-bottom: 1px solid #e1e8e2;
+          padding: 18px 6%;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 20px;
       }
 
       .top-logo {
-        color: #146c5b;
-        font-size: 21px;
-        font-weight: 700;
-        text-decoration: none;
+          color: #146c5b;
+          font-size: 21px;
+          font-weight: 700;
+          text-decoration: none;
       }
 
       .top-nav {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        flex-wrap: wrap;
+          display: flex;
+          align-items: center;
+          gap: 20px;
+          flex-wrap: wrap;
       }
 
       .top-nav a {
-        color: #26332f;
-        text-decoration: none;
-        font-size: 14px;
+          color: #26332f;
+          text-decoration: none;
+          font-size: 14px;
       }
 
       .top-nav a:hover {
-        color: #146c5b;
+          color: #146c5b;
       }
 
       /* ===== メイン ===== */
-
       .top-main {
-        max-width: 1100px;
-        margin: auto;
-        padding: 36px 24px 70px;
+          max-width: 1100px;
+          margin: auto;
+          padding: 36px 24px 70px;
       }
 
       .page-title {
-        font-size: 26px;
-        color: #146c5b;
-        margin: 0 0 28px;
+          font-size: 26px;
+          color: #146c5b;
+          margin: 0 0 28px;
       }
 
       /* ===== 検索エリア ===== */
-
       .search-area {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 22px;
-        margin-bottom: 48px;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 22px;
+          margin-bottom: 48px;
       }
 
       .search-box {
-        background: white;
-        padding: 25px;
-        border: 1px solid #e1e8e2;
-        border-radius: 12px;
+          background: white;
+          padding: 25px;
+          border: 1px solid #e1e8e2;
+          border-radius: 12px;
       }
 
       .search-box h2 {
-        font-size: 19px;
-        margin: 0 0 18px;
+          font-size: 19px;
+          margin: 0 0 18px;
       }
 
       .search-form {
-        display: flex;
-        gap: 10px;
+          display: flex;
+          gap: 10px;
       }
 
       .search-form input {
-        flex: 1;
-        min-width: 0;
-        padding: 13px;
-        border: 1px solid #cddbd3;
-        border-radius: 8px;
-        font-size: 14px;
+          flex: 1;
+          min-width: 0;
+          padding: 13px;
+          border: 1px solid #cddbd3;
+          border-radius: 8px;
+          font-size: 14px;
       }
 
       .search-form button,
       .location-button {
-        padding: 12px 20px;
-        border: none;
-        border-radius: 8px;
-        background: #146c5b;
-        color: white;
-        font-size: 14px;
-        cursor: pointer;
+          padding: 12px 20px;
+          border: none;
+          border-radius: 8px;
+          background: #146c5b;
+          color: white;
+          font-size: 14px;
+          cursor: pointer;
       }
 
       .location-button {
-        width: 100%;
-        padding: 14px;
+          width: 100%;
+          padding: 14px;
       }
 
       .search-form button:hover,
       .location-button:hover {
-        background: #0f584a;
+          background: #0f584a;
       }
 
       .location-message {
-        font-size: 13px;
-        color: #68756e;
-        margin: 12px 0 0;
-        min-height: 20px;
+          font-size: 13px;
+          color: #68756e;
+          margin: 12px 0 0;
+          min-height: 20px;
       }
 
       /* ===== セール商品 ===== */
-
       .section-heading {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 22px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 22px;
       }
 
       .section-title {
-        font-size: 22px;
-        margin: 0;
+          font-size: 22px;
+          margin: 0;
       }
 
       .section-description {
-        color: #68756e;
-        font-size: 13px;
-        margin: -8px 0 24px;
-        line-height: 1.8;
+          color: #68756e;
+          font-size: 13px;
+          margin: -8px 0 24px;
+          line-height: 1.8;
       }
 
-      /*
-         * ===== 商品カードの配置 =====
-         * Desktop：上3個・下2個（中央揃え）
-         * Tablet：2個ずつ
-         * Smartphone：1個ずつ
-         */
-
+      /* ===== 商品カードの配置 =====
+        Desktop：上3個・下2個（中央揃え）
+        Tablet：2個ずつ
+        Smartphone：1個ずつ
+      */
       .product-grid {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 20px;
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 20px;
       }
 
       /* ===== 商品カード ===== */
-
       .product-card {
-        width: calc((100% - 40px) / 3);
-        min-width: 0;
-        background: white;
-        border: 1px solid #e5ebe5;
-        border-radius: 12px;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        transition:
-          transform 0.2s,
-          box-shadow 0.2s;
+          width: calc((100% - 40px) / 3);
+          min-width: 0;
+          background: white;
+          border: 1px solid #e5ebe5;
+          border-radius: 12px;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          transition: transform 0.2s, box-shadow 0.2s;
       }
 
       .product-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 22px rgba(20, 108, 91, 0.08);
+          transform: translateY(-3px);
+          box-shadow: 0 8px 22px rgba(20, 108, 91, 0.08);
       }
 
       /* ===== カテゴリー名 ===== */
-
       .category-header {
-        padding: 14px 16px;
-        background: #e6f2ec;
-        border-bottom: 1px solid #d8e9df;
+          padding: 14px 16px;
+          background: #e6f2ec;
+          border-bottom: 1px solid #d8e9df;
       }
 
       .category-label {
-        display: inline-block;
-        color: #146c5b;
-        font-size: 14px;
-        font-weight: 700;
+          display: inline-block;
+          color: #146c5b;
+          font-size: 14px;
+          font-weight: 700;
       }
 
       /* ===== 商品画像 ===== */
-
       .product-image {
-        height: 170px;
-        background: #e8f0e9;
-        overflow: hidden;
+          height: 170px;
+          background: #e8f0e9;
+          overflow: hidden;
       }
 
       .product-image img {
-        display: block;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        object-position: center;
+          display: block;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center;
       }
 
       /* ===== 商品情報 ===== */
-
       .product-info {
-        padding: 18px;
-        display: flex;
-        flex-direction: column;
-        flex: 1;
+          padding: 18px;
+          display: flex;
+          flex-direction: column;
+          flex: 1;
       }
 
       .product-info h3 {
-        font-size: 16px;
-        margin: 0 0 8px;
+          font-size: 16px;
+          margin: 0 0 8px;
       }
 
       .shop-name {
-        font-size: 13px;
-        color: #68756e;
-        margin: 0 0 13px;
+          font-size: 13px;
+          color: #68756e;
+          margin: 0 0 13px;
       }
 
       .old-price {
-        color: #888;
-        text-decoration: line-through;
-        font-size: 13px;
+          color: #888;
+          text-decoration: line-through;
+          font-size: 13px;
       }
 
       .new-price {
-        color: #e66a4d;
-        font-size: 21px;
-        font-weight: 700;
-        margin: 5px 0 16px;
+          color: #e66a4d;
+          font-size: 21px;
+          font-weight: 700;
+          margin: 5px 0 16px;
       }
 
       /* ===== 詳細を見るボタン ===== */
-
       .detail-button {
-        display: block;
-        padding: 11px;
-        margin-top: auto;
-        text-align: center;
-        background: #146c5b;
-        color: white;
-        border-radius: 8px;
-        text-decoration: none;
-        font-size: 14px;
+          display: block;
+          padding: 11px;
+          margin-top: auto;
+          text-align: center;
+          background: #146c5b;
+          color: white;
+          border-radius: 8px;
+          text-decoration: none;
+          font-size: 14px;
       }
 
       .detail-button:hover {
-        background: #0f584a;
+          background: #0f584a;
       }
 
       /* ===== 商品一覧を見るボタン ===== */
-
       .all-products {
-        text-align: center;
-        margin-top: 36px;
+          text-align: center;
+          margin-top: 36px;
       }
 
       .all-products a {
-        display: inline-block;
-        padding: 13px 32px;
-        background: #ff785a;
-        color: white;
-        text-decoration: none;
-        border-radius: 9px;
-        font-weight: 700;
+          display: inline-block;
+          padding: 13px 32px;
+          background: #ff785a;
+          color: white;
+          text-decoration: none;
+          border-radius: 9px;
+          font-weight: 700;
+          transition: background 0.2s;
       }
 
       .all-products a:hover {
-        background: #e86a4d;
+          background: #e86a4d;
+      }
+
+      /* ===== 期限間近商品 ===== */
+      .bargain-section {
+          margin: 50px 0 70px;
+      }
+
+      .bargain-heading {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 20px;
+          padding: 25px 30px;
+          background: #ffffff;
+          border: 1px solid #dce5df;
+          border-radius: 12px;
+      }
+
+      .bargain-heading .section-title {
+          margin: 0;
+          color: #183b32;
+          font-size: 22px;
+      }
+
+      .bargain-button {
+          display: inline-block;
+          padding: 13px 24px;
+          background: #146c5b;
+          color: #ffffff;
+          text-decoration: none;
+          font-weight: 700;
+          border-radius: 8px;
+          white-space: nowrap;
+          transition: background 0.2s;
+      }
+
+      .bargain-button:hover {
+          background: #0f5548;
+      }
+
+      .bargain-description {
+          margin: 20px 0;
+          color: #666666;
+          line-height: 1.8;
+      }
+
+      .expiry-date {
+          margin: 12px 0;
+          color: #d9533f;
+          font-size: 13px;
+          font-weight: 700;
+      }
+
+      /* ===== 期限間近商品をもっと見るボタン ===== */
+      .bargain-more {
+          margin: 35px 0 45px;
+          text-align: center;
+      }
+
+      .bargain-more-button {
+          display: inline-block;
+          padding: 13px 32px;
+          background: #ff785a;
+          color: #ffffff;
+          text-decoration: none;
+          font-weight: 700;
+          border-radius: 9px;
+          transition: background 0.2s;
+      }
+
+      .bargain-more-button:hover {
+          background: #e86a4d;
       }
 
       /* ===== フッター ===== */
-
       .top-footer {
-        padding: 22px;
-        text-align: center;
-        font-size: 12px;
-        color: #68756e;
-        border-top: 1px solid #e1e8e2;
+          padding: 22px;
+          text-align: center;
+          font-size: 12px;
+          color: #68756e;
+          border-top: 1px solid #e1e8e2;
       }
 
       /* ===== タブレット ===== */
-
       @media (max-width: 900px) {
-        .search-area {
-          grid-template-columns: 1fr;
-        }
+          .search-area {
+              grid-template-columns: 1fr;
+          }
 
-        .product-card {
-          width: calc((100% - 20px) / 2);
-        }
+          .product-card {
+              width: calc((100% - 20px) / 2);
+          }
       }
 
       /* ===== スマートフォン ===== */
-
       @media (max-width: 550px) {
-        .top-header {
-          padding: 16px;
-          flex-direction: column;
-          align-items: flex-start;
-        }
+          .top-header {
+              padding: 16px;
+              flex-direction: column;
+              align-items: flex-start;
+          }
 
-        .top-nav {
-          gap: 14px;
-        }
+          .top-nav {
+              gap: 14px;
+          }
 
-        .top-main {
-          padding: 28px 16px 50px;
-        }
+          .top-main {
+              padding: 28px 16px 50px;
+          }
 
-        .product-card {
-          width: 100%;
-        }
+          .product-card {
+              width: 100%;
+          }
 
-        .search-form {
-          flex-direction: column;
-        }
+          .search-form {
+              flex-direction: column;
+          }
 
-        .search-form button {
-          width: 100%;
-        }
+          .search-form button {
+              width: 100%;
+          }
+
+          .bargain-heading {
+              align-items: flex-start;
+              flex-direction: column;
+              padding: 20px;
+          }
+
+          .bargain-button {
+              width: 100%;
+              box-sizing: border-box;
+              text-align: center;
+          }
+
+          .bargain-more-button {
+              max-width: 100%;
+              padding: 13px 24px;
+          }
       }
