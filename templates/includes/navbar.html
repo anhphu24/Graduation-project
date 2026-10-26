@@ -3,5 +3,10 @@
   <a href="{% url 'reservations:history' %}">予約履歴・状況</a>
   <a href="{% url 'reservations:cart' %}">🛒 カート</a>
   <a href="{% url 'accounts:mypage' %}">マイページ</a>
-  <a href="{% url 'accounts:customer_logout' %}">ログアウト</a>
+ <form method="POST"
+      action="{% url 'accounts:customer_logout' %}"
+      class="logout-form">
+    {% csrf_token %}
+    <button type="submit" class="logout-link">ログアウト</button>
+</form>
 </nav>
