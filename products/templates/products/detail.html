@@ -1,9 +1,42 @@
 {% extends 'base.html' %}
-{% block title %}商品詳細｜食品ロス削減{% endblock %}
-{% block body %}
-<main style="max-width:720px;margin:90px auto;padding:36px;background:white;border-radius:20px;text-align:center">
-  <h1>商品詳細</h1>
-  <p>この画面は現在開発中です。（UIサンプル未提供）</p>
-  <a href="{% url 'core:index' %}">トップページに戻る</a>
+{% load static %}
+
+{% block title %}{{ product.name }}の詳細 | 食品ロス削減アプリ{% endblock %}
+
+{% block content %}
+<main class="product-detail-main">
+    <div class="product-detail-container">
+        <!-- カテゴリー -->
+        <div class="category-header">
+            <span class="category-label">{{ product.category }}</span>
+        </div>
+
+        <!-- 商品画像 -->
+        <div class="product-image">
+            {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" />
+            {% else %}
+                <img src="{% static 'images/placeholder.svg' %}" alt="プレースホルダー画像" />
+            {% endif %}
+        </div>
+
+        <!-- 商品情報 -->
+        <div class="product-info-detail">
+            <h1>{{ product.name }}</h1>
+            <p class="shop-name">店舗名: {{ product.shop_name }}</p>
+            <p class="expiry-date">消費期限・賞味期限：{{ product.expiry_date|date:"n月j日 H:i" }}</p>
+            <p class="stock-status">在庫数: {{ product.stock }}点</p>
+            
+            <div class="price-box">
+                <span class="old-price">通常価格: <del>{{ product.old_price }}円</del></span>
+                <span class="new-price">割引価格: <strong>{{ product.new_price }}円</strong></span>
+            </div>
+
+            <div class="product-explanation">
+                <h3>商品説明</h3>
+                <p>{{ product.explanation|linebreaksbr }}</p>
+            </div>
+        </div>
+    </div>
 </main>
 {% endblock %}

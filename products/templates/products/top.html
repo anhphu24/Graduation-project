@@ -68,11 +68,11 @@
 
       <section id="products">
         <div class="section-heading">
-          <h2 class="section-title">セール中の商品</h2>
+          <h2 class="section-title">消費期限の近い商品</h2>
         </div>
 
         <p class="section-description">
-          カテゴリーごとに、現在販売中のセール商品をご紹介します。
+          カテゴリーごとに、現在販売中の消費期限の近い商品をご紹介します。
         </p>
 
         <div class="product-grid">
@@ -91,6 +91,8 @@
               <h3>パンセット</h3>
 
               <p class="shop-name">○○ベーカリー</p>
+              
+              <p class="expiry-date">消費期限：10月15日 21:00</p>
 
               <span class="old-price"> 500円 </span>
 
@@ -118,12 +120,16 @@
 
               <p class="shop-name">○○スーパー</p>
 
+              <p class="expiry-date">消費期限：10月16日 21:00</p>
+
               <span class="old-price"> 650円 </span>
 
               <p class="new-price">400円</p>
 
               <a href="{% url 'products:detail' %}" class="detail-button">
                 詳細を見る
+              
+
               </a>
             </div>
           </article>
@@ -144,12 +150,17 @@
 
               <p class="shop-name">○○デリ</p>
 
+              <p class="expiry-date">消費期限：10月14日 21:00</p>
+
               <span class="old-price"> 450円 </span>
 
               <p class="new-price">250円</p>
 
               <a href="{% url 'products:detail' %}" class="detail-button">
                 詳細を見る
+              </a>
+              <a href="{% url 'products:recipe' %}" class="detail-button recipe-button">
+                レシピを見る
               </a>
             </div>
           </article>
@@ -169,6 +180,8 @@
               <h3>牛乳</h3>
 
               <p class="shop-name">○○スーパー</p>
+
+              <p class="expiry-date">消費期限：10月18日 21:00</p>
 
               <span class="old-price"> 150円 </span>
 
@@ -196,6 +209,8 @@
 
               <p class="shop-name">○○スーパー</p>
 
+              <p class="expiry-date">消費期限：10月20日 21:00</p>
+
               <span class="old-price"> 800円 </span>
 
               <p class="new-price">500円</p>
@@ -205,7 +220,36 @@
               </a>
             </div>
           </article>
-        </div>
+
+            <!-- ⑤ 豚肉パック -->
+
+          <article class="product-card">
+            <div class="category-header">
+              <span class="category-label"> 🥩 豚肉パック </span>
+            </div>
+
+            <div class="product-image">
+              <img src="{% static 'images/meat.jpg' %}"onerror="this.onerror=null;this.src='{% static 'images/placeholder.svg' %}'" alt="豚肉" />
+            </div>
+
+            <div class="product-info">
+              <h3>豚肉</h3>
+
+              <p class="shop-name">○○スーパー</p>
+
+              <p class="expiry-date">消費期限：10月22日 21:00</p>
+
+              <span class="old-price"> 800円 </span>
+
+              <p class="new-price">500円</p>
+
+              <a href="{% url 'products:detail' %}" class="detail-button">
+                詳細を見る
+              <a href="{% url 'products:recipe' %}" class="detail-button recipe-button">
+                レシピを見る
+              </a>
+            </div>
+          </article>
 
         <!-- 商品一覧へ -->
 
@@ -214,99 +258,20 @@
         </div>
       </section>
 
-     <!-- ===== 期限間近商品 ===== -->
 
-      <section class="bargain-section">
-          <div class="bargain-heading">
-              <h2 class="section-title">期限間近商品</h2>
-              
-          </a>
-      </div>
-
-      <p class="bargain-description">
-          消費期限・賞味期限が近い、お得な商品をご紹介します。
-      </p>
-
-      <div class="product-grid">
-          <!-- ① 豚肉パック -->
-          <article class="product-card">
-              <div class="product-image">
-                  <img
-                      src="{% static 'images/meat.jpg' %}"
-                      alt="豚肉パック"
-                      onerror="this.onerror=null;this.src='{% static 'images/placeholder.svg' %}'"
-                  >
-              </div>
-
-              <div class="product-info">
-                  <h3>豚肉パック</h3>
-                  <p class="shop-name">○○スーパー</p>
-                  <p class="expiry-date">消費期限：10月15日 21:00</p>
-                  <span class="old-price">800円</span>
-                  <p class="new-price">500円</p>
-
-                  <a href="{% url 'products:detail' %}" class="detail-button">
-                      詳細を見る
-                  </a>
-              </div>
-          </article>
-
-          <!-- ② 牛乳 -->
-          <article class="product-card">
-              <div class="product-image">
-                  <img
-                      src="{% static 'images/juice.jpg' %}"
-                      alt="牛乳"
-                      onerror="this.onerror=null;this.src='{% static 'images/placeholder.svg' %}'"
-                  >
-              </div>
-
-              <div class="product-info">
-                  <h3>牛乳</h3>
-                  <p class="shop-name">○○スーパー</p>
-                  <p class="expiry-date">賞味期限：10月16日 12:00</p>
-                  <span class="old-price">150円</span>
-                  <p class="new-price">100円</p>
-
-                  <a href="{% url 'products:detail' %}" class="detail-button">
-                      詳細を見る
-                  </a>
-              </div>
-          </article>
-
-          <!-- ③ ケーキ -->
-          <article class="product-card">
-              <div class="product-image">
-                  <img
-                      src="{% static 'images/dessert.jpg' %}"
-                      alt="ケーキ"
-                      onerror="this.onerror=null;this.src='{% static 'images/placeholder.svg' %}'"
-                  >
-              </div>
-
-              <div class="product-info">
-                  <h3>ケーキ</h3>
-                  <p class="shop-name">○○スーパー</p>
-                  <p class="expiry-date">消費期限：10月15日 17:00</p>
-                  <span class="old-price">800円</span>
-                  <p class="new-price">500円</p>
-
-                  <a href="{% url 'products:detail' %}" class="detail-button">
-                      詳細を見る
-                  </a>
-              </div>
-          </article>
-      </div>
-      
-    <div class="bargain-more">
-    <a href="{% url 'products:list' %}" class="bargain-more-button">
-        期限間近商品をもっと見る →
-    </a>
-</div>
-</div>
-        </div>
-
-</section>
+        <!-- お買い得商品(10/27) --> 
+        <section class="sail-products-section">
+            <div class="section-box">
+                <div class="section-heading">
+                    <h2 class="section-title">お買い得商品</h2>
+                </div>
+                <div class="all-products">
+                    <a href="{% url 'products:list' %}" class="detail-button sail-button">
+                        お買い得商品を見る →
+                    </a>
+                </div>
+            </div>
+        </section>
 
 
     </main>
