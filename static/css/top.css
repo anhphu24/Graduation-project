@@ -172,6 +172,7 @@
           font-size: 13px;
           margin: -8px 0 24px;
           line-height: 1.8;
+          
       }
 
       /* ===== 商品カードの配置 =====
@@ -305,7 +306,7 @@
       }
 
       .all-products a {
-          display: inline-block;
+          display: inline-block;    
           padding: 13px 32px;
           background: #ff785a;
           color: white;
@@ -455,36 +456,6 @@
               max-width: 100%;
               padding: 13px 24px;
           }
-
-         .sail-products-section {
-    max-width: 1200px; /* 画面全体の幅に合わせて調整してください */
-    margin: 30px auto;  /* 上下の余白と中央寄せ */
-    padding: 0 20px;
-    box-sizing: border-box;
-}
-
-.section-box {
-    background-color: #ffffff; /* 背景を白にする */
-    border-radius: 8px;        /* 角を丸くする（上部カードに合わせる） */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* 上部カードと同じような軽い影をつける */
-    padding: 30px;             /* 内側の余白 */
-    box-sizing: border-box;
-}
-
-.section-heading {
-    margin-bottom: 20px;
-}
-
-/* 必要に応じてタイトルの見た目を調整 */
-.section-title {
-    font-size: 1.25rem;
-    color: #333333;
-    margin: 0;
-}
-
-.all-products {
-    text-align: center; /* ボタンを中央寄せにする場合 */
-}
 
 
       }
