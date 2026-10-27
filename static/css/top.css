@@ -281,6 +281,22 @@
       .detail-button:hover {
           background: #0f584a;
       }
+       /* ===== レシピを見るボタン ===== */
+        .recipe-button {
+            display: block;
+            padding: 11px;
+            margin-top: 8px;
+            text-align: center;
+            background: #ff7301;
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+            
+        .recipe-button:hover {
+          background: #0f584a;
+      }
 
       /* ===== 商品一覧を見るボタン ===== */
       .all-products {
@@ -439,4 +455,36 @@
               max-width: 100%;
               padding: 13px 24px;
           }
+
+         .sail-products-section {
+    max-width: 1200px; /* 画面全体の幅に合わせて調整してください */
+    margin: 30px auto;  /* 上下の余白と中央寄せ */
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+.section-box {
+    background-color: #ffffff; /* 背景を白にする */
+    border-radius: 8px;        /* 角を丸くする（上部カードに合わせる） */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* 上部カードと同じような軽い影をつける */
+    padding: 30px;             /* 内側の余白 */
+    box-sizing: border-box;
+}
+
+.section-heading {
+    margin-bottom: 20px;
+}
+
+/* 必要に応じてタイトルの見た目を調整 */
+.section-title {
+    font-size: 1.25rem;
+    color: #333333;
+    margin: 0;
+}
+
+.all-products {
+    text-align: center; /* ボタンを中央寄せにする場合 */
+}
+
+
       }

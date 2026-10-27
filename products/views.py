@@ -14,3 +14,6 @@ def product_list(request):
 
 def product_detail(request):
     return render(request, 'products/detail.html')
+
+def product_recipe(request):
+    return render(request, 'products/recipe.html')
