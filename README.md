@@ -1,59 +1,59 @@
-# Food Rescue — Hệ thống giảm lãng phí thực phẩm
+# Food Rescue — 食品ロス削減システム
 
-> **Trạng thái hiện tại: Market MVP đã được triển khai trong Django monolith.**
-> Luồng danh sách/chi tiết lô, đặt và hủy đơn, tạo lô, xác nhận nhận tiền, hết hạn đơn và phân quyền Membership đã được nối vào settings/URL.
-> Models và migrations nghiệp vụ đã có; cần chạy `python manage.py migrate` trước khi sử dụng trên database cục bộ. Không xem SQLite là bằng chứng an toàn đồng thời cho production.
-> Giao diện Top phase 1–2 vẫn dùng dữ liệu mẫu riêng tại `/products/`; giao diện Market dùng dữ liệu database tại `/`.
+> **現在の状態：Market MVP は Django モノリスとして実装済みです。**
+> ロットの一覧・詳細、予約・キャンセル、ロット作成、入金確認、注文の期限切れ処理、Membership による権限管理は settings／URL に接続されています。
+> 業務モデルと migration は作成済みです。ローカルデータベースで使用する前に `python manage.py migrate` を実行してください。SQLite の結果を、本番環境における同時実行安全性の根拠として扱わないでください。
+> Phase 1–2 のトップ画面は `/products/` で独自のサンプルデータを使用し、Market 画面は `/` でデータベースのデータを使用します。
 
-Ứng dụng Django cho chuỗi siêu thị/cửa hàng tiện lợi đăng thực phẩm gần hết hạn. Khách đặt online, đến đúng chi nhánh nhận hàng và thanh toán tại quầy. Bản MVP không thu tiền online, không giao hàng.
+賞味期限・消費期限が近い食品をスーパーマーケットやコンビニエンスストアのチェーンが出品する Django アプリケーションです。利用者はオンラインで商品を予約し、指定した店舗で受け取り、店頭で支払います。MVP ではオンライン決済と配送を扱いません。
 
-## 1. Phạm vi và giả định
+## 1. スコープと前提
 
-- Giao diện hiện dùng tiếng Nhật để đồng bộ với dự án có sẵn; tiền tệ mặc định JPY và múi giờ Asia/Tokyo. Đơn vị tiền tệ có thể đổi bằng biến môi trường `CURRENCY`.
-- Một đơn = một lô hàng tại một chi nhánh, số lượng do khách chọn. Giỏ nhiều sản phẩm là giai đoạn sau.
-- Nhân viên nhập lô hàng thủ công. Chưa tích hợp POS, ERP hay tự động đọc hạn dùng.
-- Lô hàng tự xuất hiện khi được bật và đang trong thời gian cho phép đặt. Hạn đặt < hạn nhận ≤ hạn sử dụng.
-- Đơn giữ hàng đến hạn nhận của lô. Khách được hủy trước hạn nhận; quá hạn hệ thống chuyển EXPIRED.
-- Hàng hết hạn sử dụng không được đặt hoặc giao, kể cả khi tác vụ dọn đơn chạy chậm.
-- Không tự suy diễn thực phẩm an toàn dựa vào ngày hạn: bên bán chịu trách nhiệm dữ liệu, bảo quản, dị ứng và thu hồi. Phân biệt use-by/best-before trong thông tin sản phẩm.
+- 既存プロジェクトに合わせ、画面表示には日本語を使用します。既定の通貨は JPY、タイムゾーンは Asia/Tokyo です。通貨単位は環境変数 `CURRENCY` で変更できます。
+- 1 件の注文は、1 店舗にある 1 ロットを対象とし、数量は利用者が指定します。複数商品をまとめるカート機能は今後の対応です。
+- 店舗スタッフはロットを手動で登録します。POS、ERP、期限情報の自動読み取りとは連携していません。
+- ロットは販売が有効で、予約可能時間内にある場合に自動表示されます。予約締切 < 受取期限 ≤ 使用期限でなければなりません。
+- 注文はロットの受取期限まで商品を確保します。利用者は受取期限前にキャンセルでき、期限を過ぎた注文はシステムが EXPIRED に変更します。
+- 使用期限を過ぎた商品は、期限切れ注文の処理が遅れていても予約・受け渡しできません。
+- 日付だけから食品の安全性を判断しません。販売側が商品情報、保管、アレルギー、回収に責任を持ちます。商品情報では use-by（消費期限）と best-before（賞味期限）を区別します。
 
-## 2. Vai trò và phân quyền
+## 2. ロールと権限
 
-| Vai trò | Quyền |
+| ロール | 権限 |
 |---|---|
-| Khách | Đăng ký, đăng nhập, tìm hàng, xem chi tiết, đặt và hủy đơn của mình |
-| Nhân viên chi nhánh | Tạo lô từ danh mục sản phẩm của chuỗi, xem đơn chi nhánh, xác nhận thanh toán và giao hàng bằng mã nhận |
-| Quản lý chuỗi | Có quyền vận hành tại mọi chi nhánh thuộc chuỗi được giao; xem báo cáo trong phạm vi đó |
-| Quản trị nền tảng | Django Admin: tạo chuỗi, chi nhánh, sản phẩm và gán quyền; vận hành mọi chi nhánh |
+| 利用者 | 会員登録、ログイン、商品検索、詳細確認、自分の注文の予約・キャンセル |
+| 店舗スタッフ | チェーンの商品カタログからロットを作成、店舗の注文を確認、受取コードを使って支払いと商品受け渡しを確定 |
+| チェーン管理者 | 割り当てられたチェーン配下の全店舗を運用し、その範囲のレポートを確認 |
+| プラットフォーム管理者 | Django Admin でチェーン、店舗、商品、権限を管理し、すべての店舗を運用 |
 
-MVP quản lý danh mục, chi nhánh và phân quyền qua quản trị nền tảng. Trang tự quản lý cơ cấu và nhân viên cho quản lý chuỗi là phần mở rộng. Không dùng is_staff để cấp quyền thao tác các chuỗi; chỉ superuser dùng Admin. Phân quyền theo đối tượng áp dụng phía server.
+MVP では、商品カタログ、店舗、権限をプラットフォーム管理者が管理します。チェーン管理者向けの組織・スタッフ管理画面は今後の拡張対象です。チェーン操作の権限付与に `is_staff` は使用せず、Admin は superuser だけが使用します。オブジェクト単位の権限はサーバー側で検証します。
 
-## 3. Kiến trúc
+## 3. アーキテクチャ
 
-Django monolith: Templates + Forms + session authentication → views → services giao dịch → ORM → PostgreSQL. SQLite dành cho demo và kiểm thử chức năng. Không cần Redis/Celery ở MVP; cron gọi management command mỗi phút để đóng đơn quá hạn.
+Django モノリス構成です。Templates + Forms + セッション認証 → views → トランザクションを扱う services → ORM → PostgreSQL という流れを採用します。SQLite はデモと機能テスト専用です。MVP では Redis／Celery を使用せず、cron から毎分 management command を呼び出して期限切れ注文を処理します。
 
 ```mermaid
 flowchart TD
-    C[Khách hàng] --> W[Django views và templates]
-    S[Nhân viên / quản lý chuỗi] --> W
-    W --> P[Kiểm tra quyền và services]
+    C[利用者] --> W[Django views と templates]
+    S[店舗スタッフ / チェーン管理者] --> W
+    W --> P[権限確認と services]
     P --> D[(PostgreSQL)]
-    T[Cron mỗi phút] --> P
-    A[Quản trị nền tảng] --> B[Django Admin]
+    T[毎分実行する Cron] --> P
+    A[プラットフォーム管理者] --> B[Django Admin]
     B --> D
 ```
 
-## 4. Mô hình dữ liệu
+## 4. データモデル
 
-| Bảng | Dữ liệu chính |
+| テーブル | 主なデータ |
 |---|---|
-| User | Django auth, tài khoản và mật khẩu băm |
-| Chain | Tên chuỗi |
-| Branch | Chuỗi, tên chi nhánh, địa chỉ |
-| Membership | Người dùng, chuỗi, chi nhánh (trống = quản lý chuỗi) |
-| Product | Chuỗi, tên, mô tả, thành phần/dị ứng, bảo quản, loại hạn, URL ảnh |
-| Lot | Sản phẩm, chi nhánh, mã lô, giá gốc/giảm, lượng còn có thể đặt, mở bán, đóng đặt, bắt đầu/kết thúc nhận, hạn dùng, bật bán |
-| Order | UUID nội bộ, khách, lô, số lượng, giá chốt, mã nhận UUID, trạng thái, hạn nhận chốt, thời điểm đặt/thanh toán, người giao |
+| User | Django auth、アカウント、ハッシュ化されたパスワード |
+| Chain | チェーン名 |
+| Branch | チェーン、店舗名、住所 |
+| Membership | ユーザー、チェーン、店舗（空欄の場合はチェーン管理者） |
+| Product | チェーン、商品名、説明、原材料／アレルギー、保管方法、期限種別、画像 URL |
+| Lot | 商品、店舗、ロットコード、通常価格／割引価格、予約可能在庫、販売開始、予約締切、受取開始／終了、使用期限、販売有効フラグ |
+| Order | 内部 UUID、利用者、ロット、数量、確定価格、受取コード UUID、状態、確定受取期限、予約／支払日時、受渡担当者 |
 
 ```mermaid
 erDiagram
@@ -67,42 +67,42 @@ erDiagram
     User ||--o{ Membership : receives
 ```
 
-Giá, số lượng và hạn nhận được chốt trên đơn. Hạn dùng lô luôn được kiểm tra thêm tại thời điểm giao. Không cho sửa lô đã có đơn qua Admin; điều chỉnh/thu hồi cần quy trình riêng trước production. Các quan hệ giao dịch dùng PROTECT để giữ lịch sử.
+価格、数量、受取期限は注文作成時に確定して保存します。ロットの使用期限は商品受け渡し時にも必ず確認します。注文が存在するロットは Admin から編集できません。調整・回収には、本番公開前に専用の手順が必要です。取引履歴を保持するため、取引に関わるリレーションには PROTECT を使用します。
 
-## 5. Luồng nghiệp vụ và bất biến
+## 5. 業務フローと不変条件
 
-1. Nhân viên tạo lô hợp lệ của chi nhánh được phân quyền; chọn sản phẩm cùng chuỗi.
-2. Khách lọc từ khóa/chi nhánh; chỉ thấy hàng đang bán, còn lượng và chưa đóng nhận đơn.
-3. POST đặt hàng kiểm tra đăng nhập, CSRF, số nguyên dương. Trong transaction, khóa lô, kiểm tra thời gian và tồn; giảm lượng và tạo đơn cùng giao dịch. Token request UUID chống tạo đơn hai lần khi gửi lại cùng form.
-4. Khách trình mã nhận tại chi nhánh. Nhân viên kiểm tra mã, thời gian nhận, quyền chi nhánh, trạng thái; thu tiền tại quầy rồi bấm xác nhận **đã nhận tiền và giao hàng**. Không thu tiền tự động.
-5. Hủy/EXPIRED chỉ chuyển từ RESERVED và hoàn tồn đúng một lần, trong transaction. Tồn được hoàn nhưng lô hết thời gian vẫn không xuất hiện.
+1. 店舗スタッフは、権限を持つ店舗に対して有効なロットを作成し、同じチェーンの商品を選択します。
+2. 利用者はキーワードや店舗で絞り込みます。販売中で、在庫があり、予約受付が終了していない商品だけが表示されます。
+3. 予約の POST では、ログイン、CSRF、正の整数である数量を確認します。トランザクション内でロットをロックし、時間条件と在庫を確認したうえで、在庫減算と注文作成を同一トランザクションで実行します。同じフォームが再送された場合の重複注文を、UUID の request token で防止します。
+4. 利用者は店舗で受取コードを提示します。スタッフはコード、受取可能時間、店舗権限、注文状態を確認し、店頭で代金を受け取った後に **入金確認・商品受け渡し済み** を確定します。自動決済は行いません。
+5. キャンセル／EXPIRED への変更は RESERVED からのみ許可し、トランザクション内で在庫を一度だけ戻します。在庫が戻っても、販売時間外のロットは一覧に表示されません。
 
-Trạng thái: RESERVED → COLLECTED hoặc CANCELLED hoặc EXPIRED. Chỉ COLLECTED có paid_at và collected_by. Không chuyển ngược. Khóa theo thứ tự Lot → Order để giảm deadlock. Lệnh dọn chạy lặp lại an toàn. Giá sử dụng Decimal, không dùng float.
+状態遷移は RESERVED → COLLECTED、CANCELLED、EXPIRED のいずれかです。`paid_at` と `collected_by` を持つのは COLLECTED だけです。状態を戻すことはできません。デッドロックを減らすため、Lot → Order の順にロックします。期限切れ処理は繰り返し実行しても安全です。価格には Decimal を使用し、float は使用しません。
 
-## 6. Trang và endpoint
+## 6. 画面とエンドポイント
 
-| Method / path | Mục đích |
+| Method / path | 目的 |
 |---|---|
-| GET / | Danh sách và tìm kiếm lô |
-| GET /lots/<id>/ | Chi tiết, thông tin bảo quản/dị ứng và biểu mẫu đặt |
-| POST /lots/<id>/reserve/ | Giữ hàng, tạo đơn |
-| GET/POST /signup/ | Đăng ký khách |
-| /accounts/login/ | Đăng nhập |
-| POST /accounts/logout/ | Đăng xuất |
-| GET /orders/ | Đơn của khách |
-| POST /orders/<uuid>/cancel/ | Hủy đơn của khách |
-| GET /staff/ | Đơn và số liệu trong phạm vi được cấp quyền |
-| GET/POST /staff/lots/new/ | Tạo lô hàng |
-| POST /staff/orders/<uuid>/collect/ | Xác nhận mã, nhận tiền và giao hàng |
-| /admin/ | Quản trị nền tảng |
+| GET / | ロットの一覧と検索 |
+| GET /lots/<id>/ | 詳細、保管／アレルギー情報、予約フォーム |
+| POST /lots/<id>/reserve/ | 商品を確保して注文を作成 |
+| GET/POST /signup/ | 利用者の会員登録 |
+| /accounts/login/ | ログイン |
+| POST /accounts/logout/ | ログアウト |
+| GET /orders/ | 利用者自身の注文一覧 |
+| POST /orders/<uuid>/cancel/ | 利用者自身による注文キャンセル |
+| GET /staff/ | 権限範囲内の注文と集計値 |
+| GET/POST /staff/lots/new/ | ロット作成 |
+| POST /staff/orders/<uuid>/collect/ | コード確認、入金確認、商品受け渡し確定 |
+| /admin/ | プラットフォーム管理 |
 
-Không có API công khai/DRF trong MVP; đây là ứng dụng HTML server-rendered hoàn chỉnh cho các luồng trên.
+MVP には公開 API／DRF はありません。上記フローを提供する、サーバー側で HTML をレンダリングするアプリケーションです。
 
-## 7. Quy trình chạy
+## 7. 実行手順
 
-Yêu cầu Python 3.11+.
+Python 3.11 以上が必要です。
 
-`market` đã được đăng ký; migrations nghiệp vụ, `seed_demo` và `expire_orders` đã được triển khai. Mã nguồn và migrations tài khoản có sẵn được giữ nguyên.
+`market` は登録済みで、業務 migration、`seed_demo`、`expire_orders` は実装済みです。既存のアカウント用ソースコードと migration はそのまま保持しています。
 
 ```bash
 python -m venv .venv
@@ -115,89 +115,89 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Mở http://127.0.0.1:8000. seed_demo tạo dữ liệu hàng mẫu, không tạo tài khoản/mật khẩu mặc định. Đăng ký khách tại /signup/. Dùng superuser tạo Membership cho tài khoản nhân viên trong /admin/: chọn chuỗi và chi nhánh; bỏ trống chi nhánh để cấp quyền quản lý chuỗi. Tạo tài khoản qua đăng ký trước khi gán Membership.
+http://127.0.0.1:8000 を開きます。`seed_demo` は商品サンプルデータを作成しますが、既定のアカウントやパスワードは作成しません。利用者は `/signup/` で登録します。スタッフ用アカウントには、`/admin/` で superuser が Membership を設定してください。チェーンと店舗を選択し、チェーン管理者にする場合は店舗を空欄にします。Membership を設定する前に、会員登録でアカウントを作成してください。
 
 ```bash
 python manage.py test
 python manage.py expire_orders
 ```
 
-Cron Linux ví dụ (thay đường dẫn thật): `* * * * * /app/.venv/bin/python /app/manage.py expire_orders`. Windows dùng Task Scheduler mỗi phút.
+Linux の cron 例（実際のパスに置き換えてください）：`* * * * * /app/.venv/bin/python /app/manage.py expire_orders`。Windows では Task Scheduler を使用して毎分実行します。
 
-## 8. PostgreSQL và triển khai
+## 8. PostgreSQL とデプロイ
 
-Mặc định SQLite chỉ để phát triển. Đặt DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT để chuyển PostgreSQL. Đặt SECRET_KEY ngẫu nhiên, DEBUG=0, ALLOWED_HOSTS bằng hostname thật, CSRF_TRUSTED_ORIGINS bằng HTTPS origins, CURRENCY và TIME_ZONE theo thị trường. Không đưa bí mật vào mã nguồn.
+既定の SQLite は開発用途に限ります。PostgreSQL に切り替えるには、`DB_NAME`、`DB_USER`、`DB_PASSWORD`、`DB_HOST`、`DB_PORT` を設定します。ランダムな `SECRET_KEY`、`DEBUG=0`、実際のホスト名を指定した `ALLOWED_HOSTS`、HTTPS origin を指定した `CSRF_TRUSTED_ORIGINS`、対象市場に合わせた `CURRENCY` と `TIME_ZONE` を設定してください。秘密情報をソースコードに保存しないでください。
 
-Production cần WSGI server (ví dụ Gunicorn), reverse proxy HTTPS, collectstatic và phục vụ static qua proxy, cron, backup/restore DB, log tập trung, cảnh báo lỗi và giới hạn đăng nhập/đặt hàng ở proxy. Thiết lập SECURE_SSL_REDIRECT=1 sau khi HTTPS hoạt động; chỉ cấu hình proxy headers khi proxy được tin cậy.
+本番環境には、WSGI サーバー（例：Gunicorn）、HTTPS リバースプロキシ、`collectstatic` とプロキシによる static 配信、cron、DB のバックアップ／リストア、集中ログ、エラー通知、プロキシ側でのログイン／予約回数制限が必要です。HTTPS が動作した後に `SECURE_SSL_REDIRECT=1` を設定します。プロキシヘッダーは、信頼できるプロキシを使用する場合にのみ設定してください。
 
-Django select_for_update cần database hỗ trợ và transaction; SQLite không cung cấp khóa hàng tương đương PostgreSQL. Tham khảo chính thức: https://docs.djangoproject.com/en/5.2/ref/models/querysets/#select-for-update và https://docs.djangoproject.com/en/5.2/topics/db/transactions/.
+Django の `select_for_update` には、対応するデータベースとトランザクションが必要です。SQLite は PostgreSQL と同等の行ロックを提供しません。公式ドキュメント：https://docs.djangoproject.com/en/5.2/ref/models/querysets/#select-for-update および https://docs.djangoproject.com/en/5.2/topics/db/transactions/ を参照してください。
 
-## 9. Kiểm thử và tiêu chí nghiệm thu
+## 9. テストと受け入れ基準
 
-Kiểm thử tự động: tồn không đủ, hạn đặt, giữ hàng, request lặp, hủy hoàn tồn một lần, hết hạn, giao đúng cửa sổ, sai mã, quyền chi nhánh, giá chốt, trang khách và form nhân viên. Kiểm thử khóa đồng thời chạy riêng trên PostgreSQL; không coi SQLite là bằng chứng chống race condition production.
+自動テストの対象は、在庫不足、予約締切、在庫確保、同一 request の再送、キャンセル時の一度だけの在庫復元、期限切れ、受取時間内の引き渡し、コード不一致、店舗権限、確定価格、利用者画面、スタッフ用フォームです。同時実行ロックのテストは PostgreSQL で別途実行します。SQLite の結果を、本番環境の race condition 対策の証明として扱いません。
 
-Nghiệm thu: khách thấy thông tin lô → đặt → thấy mã và tổng tiền → nhân viên đúng chi nhánh xác nhận thu tiền → đơn COLLECTED. Khách khác không hủy được; nhân viên chi nhánh khác không giao được; quá hạn không đặt/giao được.
+受け入れフロー：利用者がロット情報を確認 → 予約 → 受取コードと合計金額を確認 → 正しい店舗のスタッフが入金を確認 → 注文が COLLECTED になります。別の利用者はその注文をキャンセルできず、別店舗のスタッフは商品を引き渡せません。期限超過後は予約も引き渡しもできません。
 
-## 10. Giới hạn và lộ trình
+## 10. 制限事項とロードマップ
 
-MVP chưa có email/SMS, bản đồ, giỏ nhiều mặt hàng, kiểm duyệt chuỗi, tích hợp POS, xử lý thu hồi, tải ảnh lên, reset mật khẩu qua email, rate limiting trong app hay báo cáo khối lượng/CO₂ tránh lãng phí. URL ảnh do quản trị viên nhập, không tải ảnh phía server. Báo cáo chỉ đếm đơn và doanh thu đã nhận, không khẳng định lượng thực phẩm cứu được.
+MVP には、メール／SMS、地図、複数商品カート、チェーン審査、POS 連携、商品回収対応、画像アップロード、メールによるパスワードリセット、アプリ内 rate limiting、削減できた食品重量／CO₂ のレポートはありません。画像 URL は管理者が入力し、サーバー側で画像をアップロードしません。レポートは COLLECTED の注文数と売上だけを集計し、救済した食品量を示すものではありません。
 
-Trước mở thật: kiểm thử tải và race trên PostgreSQL, quy trình thu hồi/hủy bởi cửa hàng, cơ chế đối soát với POS, bảo vệ mã nhận, xác thực thông tin chuỗi, lịch backup, retention dữ liệu khách, kiểm tra bảo mật và vận hành thực tế.
+本番公開前に、PostgreSQL 上での負荷・race テスト、店舗による回収／キャンセル手順、POS との照合方法、受取コードの保護、チェーン情報の検証、バックアップ計画、利用者データの retention、セキュリティ確認、実運用確認が必要です。
 
-## 11. Hướng dẫn tiếp tục bằng Codex
+## 11. Codex で開発を継続する際の指針
 
-Đọc README này trước; giữ luồng thanh toán tại quầy. Mọi thay đổi tồn hoặc trạng thái đơn đi qua market/services.py; không sửa trực tiếp trong views/Admin. Giữ phân quyền theo Membership. Bổ sung migration và kiểm thử nghiệp vụ khi đổi dữ liệu. Không tuyên bố production-ready nếu chưa kiểm thử PostgreSQL, HTTPS, backup và vận hành. Kỹ năng django-food-rescue hướng dẫn lặp lại quy trình thiết kế → README → xây dựng → kiểm thử.
+最初にこの README を読み、店頭支払いのフローを維持してください。在庫または注文状態の変更はすべて `market/services.py` を経由し、views／Admin から直接変更しないでください。Membership による権限管理を維持します。データモデルを変更する場合は migration と業務テストを追加してください。PostgreSQL、HTTPS、バックアップ、運用を検証するまでは production-ready と表明しないでください。`django-food-rescue` skill は、設計 → README → 実装 → テストの反復手順を示します。
 
-## 12. Cấu trúc thư mục chuẩn bị sẵn
+## 12. 準備済みのディレクトリ構成
 
-Giữ các Django app ở thư mục gốc để tiếp tục phát triển từ dự án hiện có. Chia theo phạm vi nghiệp vụ; không thêm microservices, API hoặc hệ thống tác vụ nền ở bước chuẩn bị này.
+既存プロジェクトから開発を継続できるよう、各 Django app はルートディレクトリに配置します。業務領域ごとに分割し、この準備段階では microservices、API、バックグラウンドタスク基盤を追加しません。
 
-**Quy ước:** `[có sẵn]` là mã nguồn/tài nguyên được giữ nguyên; `[khung]` là file mới chỉ chứa chú thích, chưa có logic. Cây dưới tập trung vào các phần liên quan đến kiến trúc, không liệt kê `.venv`, cache hay toàn bộ ảnh và template cũ.
+**表記ルール：** `[既存]` は既存のソースコード／リソース、`[雛形]` はコメントだけを持ち、ロジックをまだ実装していない新規ファイルです。以下のツリーはアーキテクチャに関係する箇所に絞り、`.venv`、cache、既存画像・template の全件は記載しません。
 
 ```text
 Project_Graduation/
-├── manage.py                         [có sẵn]
-├── requirements.txt                  [có sẵn]
+├── manage.py                         [既存]
+├── requirements.txt                  [既存]
 ├── README.md
 ├── config/
-│   ├── __init__.py                   [có sẵn]
-│   ├── settings.py                   [có sẵn, cấu hình đang dùng]
-│   ├── urls.py                       [có sẵn, URL đang dùng]
-│   ├── asgi.py                       [có sẵn]
-│   ├── wsgi.py                       [có sẵn]
-│   └── environments/                [khung, chưa được nạp]
+│   ├── __init__.py                   [既存]
+│   ├── settings.py                   [既存、現在使用中の設定]
+│   ├── urls.py                       [既存、現在使用中の URL]
+│   ├── asgi.py                       [既存]
+│   ├── wsgi.py                       [既存]
+│   └── environments/                [雛形、未読込]
 │       ├── __init__.py
 │       ├── base.py
 │       ├── development.py
 │       ├── production.py
 │       └── test.py
 ├── accounts/
-│   ├── models.py, views.py, forms.py [có sẵn]
-│   ├── urls.py, decorators.py        [có sẵn]
-│   ├── apps.py, admin.py, tests.py   [có sẵn]
-│   ├── migrations/                  [có sẵn]
-│   ├── services.py                  [khung]
-│   └── selectors.py                 [khung]
+│   ├── models.py, views.py, forms.py [既存]
+│   ├── urls.py, decorators.py        [既存]
+│   ├── apps.py, admin.py, tests.py   [既存]
+│   ├── migrations/                  [既存]
+│   ├── services.py                  [雛形]
+│   └── selectors.py                 [雛形]
 ├── stores/
-│   ├── models.py, admin.py           [đã triển khai cho Market MVP]
-│   ├── views.py, urls.py, tests.py   [có sẵn]
-│   ├── migrations/                  [đã có migration nghiệp vụ]
-│   ├── forms.py                     [khung]
-│   ├── permissions.py               [đã triển khai]
-│   └── selectors.py                 [đã triển khai]
+│   ├── models.py, admin.py           [Market MVP 向けに実装済み]
+│   ├── views.py, urls.py, tests.py   [既存]
+│   ├── migrations/                  [業務 migration 作成済み]
+│   ├── forms.py                     [雛形]
+│   ├── permissions.py               [実装済み]
+│   └── selectors.py                 [実装済み]
 ├── products/
-│   ├── models.py, admin.py           [đã triển khai cho Market MVP]
-│   ├── views.py, urls.py, tests.py   [có sẵn]
-│   ├── migrations/                  [đã có migration nghiệp vụ]
-│   ├── forms.py                     [đã triển khai form lô]
-│   └── selectors.py                 [đã triển khai truy vấn lô]
+│   ├── models.py, admin.py           [Market MVP 向けに実装済み]
+│   ├── views.py, urls.py, tests.py   [既存]
+│   ├── migrations/                  [業務 migration 作成済み]
+│   ├── forms.py                     [ロット用フォーム実装済み]
+│   └── selectors.py                 [ロット検索実装済み]
 ├── reservations/
-│   ├── models.py, admin.py           [đã triển khai cho Market MVP]
-│   ├── views.py, urls.py, tests.py   [có sẵn]
-│   ├── migrations/                  [đã có migration nghiệp vụ]
-│   ├── forms.py                     [đã triển khai form đặt/nhận]
-│   └── selectors.py                 [đã triển khai truy vấn đơn]
-├── market/                          [đã triển khai Market MVP]
+│   ├── models.py, admin.py           [Market MVP 向けに実装済み]
+│   ├── views.py, urls.py, tests.py   [既存]
+│   ├── migrations/                  [業務 migration 作成済み]
+│   ├── forms.py                     [予約／受取フォーム実装済み]
+│   └── selectors.py                 [注文検索実装済み]
+├── market/                          [Market MVP 実装済み]
 │   ├── __init__.py
 │   ├── apps.py
 │   ├── urls.py
@@ -213,10 +213,10 @@ Project_Graduation/
 │           ├── __init__.py
 │           ├── expire_orders.py
 │           └── seed_demo.py
-├── core/                            [có sẵn, các trang chung/bản mẫu]
+├── core/                            [既存、共通／サンプル画面]
 ├── templates/
-│   ├── ...                          [template có sẵn được giữ nguyên]
-│   └── market/                      [đã triển khai]
+│   ├── ...                          [既存 template を保持]
+│   └── market/                      [実装済み]
 │       ├── base.html
 │       ├── lot_list.html
 │       ├── lot_detail.html
@@ -228,11 +228,11 @@ Project_Graduation/
 │       └── pagination.html
 ├── static/
 │   ├── css/
-│   │   ├── ...                      [CSS có sẵn]
-│   │   └── market.css               [đã triển khai]
-│   ├── js/                          [có sẵn]
-│   └── images/                      [có sẵn]
-└── tests/                           [toàn bộ là khung]
+│   │   ├── ...                      [既存 CSS]
+│   │   └── market.css               [実装済み]
+│   ├── js/                          [既存]
+│   └── images/                      [既存]
+└── tests/                           [すべて雛形]
     ├── __init__.py
     ├── integration/
     │   ├── __init__.py
@@ -243,113 +243,113 @@ Project_Graduation/
         └── test_inventory.py
 ```
 
-### 12.1. Cấu hình dự án
+### 12.1. プロジェクト設定
 
-| File/thư mục | Nội dung sẽ thực hiện sau này |
+| ファイル／ディレクトリ | 今後実装する内容 |
 |---|---|
-| `config/settings.py` | Cấu hình hiện có. Chỉ chuyển sang cấu hình tách môi trường khi bắt đầu viết code và đã kiểm tra việc khởi động Django. |
-| `config/environments/base.py` | Cấu hình chung: apps, middleware, templates, ngôn ngữ, múi giờ, static và đăng nhập. |
-| `config/environments/development.py` | Cấu hình máy phát triển, DEBUG, database demo và công cụ phát triển khi cần. |
-| `config/environments/production.py` | Biến môi trường, PostgreSQL, HTTPS, cookie, logging và cấu hình vận hành. |
-| `config/environments/test.py` | Cấu hình chạy kiểm thử, database kiểm thử và các thiết lập cô lập dữ liệu. |
-| `config/urls.py` | Sau này nối URL của giao diện mới, tài khoản và Admin. Hiện giữ nguyên URL cũ. |
-| `config/asgi.py`, `config/wsgi.py` | Điểm khởi động ứng dụng cho server triển khai; giữ nguyên ở bước này. |
+| `config/settings.py` | 現在の設定です。コードの実装開始後、Django の起動を確認してから環境別設定へ移行します。 |
+| `config/environments/base.py` | apps、middleware、templates、言語、タイムゾーン、static、ログインに関する共通設定。 |
+| `config/environments/development.py` | 開発端末、DEBUG、デモ用データベース、必要に応じた開発ツールの設定。 |
+| `config/environments/production.py` | 環境変数、PostgreSQL、HTTPS、cookie、logging、運用設定。 |
+| `config/environments/test.py` | テスト実行、テスト用データベース、データ分離に関する設定。 |
+| `config/urls.py` | 今後、新しい画面、アカウント、Admin の URL を接続します。現在は既存 URL を保持します。 |
+| `config/asgi.py`, `config/wsgi.py` | デプロイ先サーバーが使用するアプリケーションの起動点です。この段階では変更しません。 |
 
-Đặt khung cấu hình trong `environments/` để không tạo đồng thời `config/settings.py` và package `config/settings/` gây nhập nhằng khi Python import. Các file khung chưa kế thừa hay thay thế cấu hình đang chạy.
+`config/settings.py` と `config/settings/` package が同時に存在して Python import が曖昧になることを避けるため、環境別設定の雛形は `environments/` に置きます。雛形ファイルは、現在動作中の設定をまだ継承・置換しません。
 
-### 12.2. Các app nghiệp vụ
+### 12.2. 業務 app
 
-| App/file | Trách nhiệm dự kiến |
+| App／ファイル | 想定する責務 |
 |---|---|
-| `accounts/` | Tài khoản, đăng ký, đăng nhập và hồ sơ người dùng. Giữ dữ liệu tài khoản hiện có. |
-| `accounts/services.py` | Xử lý đăng ký/cập nhật hồ sơ theo nghiệp vụ; không chứa giao dịch tồn kho. |
-| `accounts/selectors.py` | Các truy vấn đọc tài khoản và hồ sơ cần tái sử dụng. |
-| `stores/models.py` | Định nghĩa `Chain`, `Branch`, `Membership` khi triển khai. |
-| `stores/forms.py` | Kiểm tra dữ liệu chuỗi, chi nhánh và phân công nhân viên; bổ sung khi cần form riêng. |
-| `stores/permissions.py` | Quyền theo đối tượng: nhân viên chi nhánh, quản lý chuỗi và quản trị nền tảng. |
-| `stores/selectors.py` | Truy vấn chuỗi/chi nhánh được phép truy cập, dùng chung cho form và giao diện. |
-| `products/models.py` | Định nghĩa `Product`, `Lot`, giá, số lượng và các mốc thời gian; ràng buộc dữ liệu. |
-| `products/forms.py` | Form tạo lô, kiểm tra sản phẩm cùng chuỗi, giá và thời gian. |
-| `products/selectors.py` | Danh sách lô đang bán, chi tiết lô, tìm kiếm và lọc chi nhánh. |
-| `reservations/models.py` | Định nghĩa `Order`, trạng thái, giá/hạn nhận chốt, mã nhận và request token. |
-| `reservations/forms.py` | Dữ liệu đặt hàng, số lượng, token chống lặp và xác nhận thanh toán/giao hàng. |
-| `reservations/selectors.py` | Đơn của khách, đơn trong phạm vi chi nhánh và báo cáo số đơn/doanh thu. |
-| `core/` | Các trang chung đã có. Khi triển khai sẽ đánh giá trang nào còn dùng; không xóa hoặc sửa ở bước này. |
+| `accounts/` | アカウント、会員登録、ログイン、ユーザープロフィール。既存のアカウントデータを保持します。 |
+| `accounts/services.py` | 会員登録／プロフィール更新の業務処理。在庫取引は扱いません。 |
+| `accounts/selectors.py` | 再利用するアカウント／プロフィールの読み取りクエリ。 |
+| `stores/models.py` | `Chain`、`Branch`、`Membership` を定義します。 |
+| `stores/forms.py` | チェーン、店舗、スタッフ割り当ての入力検証。専用フォームが必要になった時点で追加します。 |
+| `stores/permissions.py` | 店舗スタッフ、チェーン管理者、プラットフォーム管理者のオブジェクト単位の権限。 |
+| `stores/selectors.py` | アクセス可能なチェーン／店舗を取得し、フォームと画面で共有するクエリ。 |
+| `products/models.py` | `Product`、`Lot`、価格、数量、各時刻、データ制約を定義します。 |
+| `products/forms.py` | ロット作成フォーム。同じチェーンの商品、価格、時刻を検証します。 |
+| `products/selectors.py` | 販売中ロットの一覧、ロット詳細、検索、店舗絞り込み。 |
+| `reservations/models.py` | `Order`、状態、確定価格／受取期限、受取コード、request token を定義します。 |
+| `reservations/forms.py` | 予約データ、数量、重複防止 token、支払い／受け渡し確認。 |
+| `reservations/selectors.py` | 利用者の注文、店舗権限内の注文、注文件数／売上レポート。 |
+| `core/` | 既存の共通画面です。実装時に継続利用する画面を評価し、この段階では削除・変更しません。 |
 
-Trong các app đã có, `apps.py` khai báo ứng dụng; `admin.py` dành cho giao diện quản trị; `tests.py` dành cho kiểm thử riêng của app; `migrations/` chứa lịch sử thay đổi database. Chỉ sinh migrations sau khi thực sự viết/thay đổi models. `views.py` và `urls.py` cũ được giữ nguyên; về sau chuyển luồng mới sang `market` có chủ đích, tránh duy trì hai cách xử lý cùng một nghiệp vụ.
+各 app では、`apps.py` がアプリケーションを宣言し、`admin.py` が管理画面、`tests.py` が app 単位のテスト、`migrations/` がデータベース変更履歴を担当します。migration は model を実際に実装・変更した後にのみ作成します。既存の `views.py` と `urls.py` は保持し、今後、同じ業務処理が二重に存在しないよう意図的に新しいフローを `market` へ移します。
 
-### 12.3. Điều phối luồng tại `market/`
+### 12.3. `market/` によるフロー調整
 
-`market` nối các app nghiệp vụ thành luồng khách hàng/nhân viên. Models thuộc app sở hữu dữ liệu, không định nghĩa lặp lại trong `market`.
+`market` は各業務 app を利用者／スタッフのフローとして接続します。model はデータを所有する app に置き、`market` で重複定義しません。
 
-| File | Nội dung hiện tại |
+| ファイル | 現在の内容 |
 |---|---|
-| `apps.py` | Khai báo `MarketConfig`, sau đó mới đăng ký app trong settings. |
-| `urls.py` | Định tuyến các endpoint trong mục 6. URL đăng nhập/đăng ký thuộc `accounts`. |
-| `views.py` | Nhận request, kiểm tra đăng nhập/quyền, gọi form, selectors hoặc services rồi render/redirect. |
-| `forms.py` | Form tìm kiếm dùng chung; tái sử dụng form nghiệp vụ từ `products` và `reservations`, không định nghĩa trùng. |
-| `selectors.py` | Kết hợp truy vấn đọc từ các app để chuẩn bị dữ liệu trang; không thay đổi database. |
-| `services.py` | Tạo lô, giữ hàng, hủy đơn, hết hạn và xác nhận nhận hàng. Tập trung transaction, khóa tồn, chuyển trạng thái và chống request lặp. |
-| `context_processors.py` | Dữ liệu trình bày dùng chung, ví dụ đơn vị tiền tệ. |
-| `tests.py` | Kiểm thử quy tắc giao dịch, phân quyền, thời gian, tồn kho và tính lặp an toàn. |
-| `management/commands/expire_orders.py` | Lệnh dọn đơn quá hạn theo từng batch, gọi services; dự kiến được cron/Task Scheduler gọi định kỳ. |
-| `management/commands/seed_demo.py` | Tạo dữ liệu minh họa qua services; không tạo mật khẩu mặc định hoặc ghi đè dữ liệu giao dịch. |
+| `apps.py` | `MarketConfig` を宣言し、settings へ app を登録します。 |
+| `urls.py` | セクション 6 の endpoint をルーティングします。ログイン／会員登録 URL は `accounts` が所有します。 |
+| `views.py` | request を受け、ログイン／権限を検証し、form、selectors、services を呼び出して render／redirect します。 |
+| `forms.py` | 共通検索フォームを提供し、`products` と `reservations` の業務フォームを再利用して重複定義を避けます。 |
+| `selectors.py` | 各 app の読み取りクエリを組み合わせて画面データを準備します。データベースは変更しません。 |
+| `services.py` | ロット作成、在庫確保、注文キャンセル、期限切れ、商品受け渡し確認を処理します。transaction、在庫ロック、状態遷移、request の重複防止を一元管理します。 |
+| `context_processors.py` | 通貨単位など、共通の表示用データを提供します。 |
+| `tests.py` | 取引ルール、権限、時間条件、在庫、冪等性をテストします。 |
+| `management/commands/expire_orders.py` | 期限切れ注文を batch 単位で処理し、services を呼び出します。cron／Task Scheduler から定期実行する想定です。 |
+| `management/commands/seed_demo.py` | services を通じてデモデータを作成します。既定パスワードを作成せず、取引データを上書きしません。 |
 
-Các file `__init__.py` chỉ đánh dấu package Python và không chạy nghiệp vụ khi nạp package.
+`__init__.py` は Python package を示すだけで、package 読み込み時に業務処理を実行しません。
 
-### 12.4. Giao diện và tài nguyên
+### 12.4. 画面とリソース
 
-| File | Nội dung hiện tại |
+| ファイル | 現在の内容 |
 |---|---|
-| `templates/market/base.html` | Khung HTML chung, điều hướng, vùng nội dung và thông báo. |
-| `templates/market/lot_list.html` | Danh sách lô và tìm kiếm/lọc. |
-| `templates/market/lot_detail.html` | Chi tiết hàng, dị ứng, bảo quản, hạn dùng, cửa sổ nhận và form đặt. |
-| `templates/market/orders.html` | Đơn của khách, trạng thái, tổng tiền, mã nhận và nút hủy. |
-| `templates/market/dashboard.html` | Đơn và số liệu trong phạm vi quyền; form xác nhận thanh toán tại quầy và giao hàng. |
-| `templates/market/lot_form.html` | Trang nhân viên tạo lô. |
-| `templates/market/login.html`, `signup.html` | Giao diện xác thực; phần xử lý thuộc `accounts`. |
-| `templates/market/pagination.html` | Thành phần phân trang dùng chung. |
-| `static/css/market.css` | Style responsive cho giao diện khách hàng và nhân viên Market. |
+| `templates/market/base.html` | 共通 HTML、ナビゲーション、コンテンツ領域、メッセージ。 |
+| `templates/market/lot_list.html` | ロット一覧、検索、絞り込み。 |
+| `templates/market/lot_detail.html` | 商品詳細、アレルギー、保管方法、期限、受取時間、予約フォーム。 |
+| `templates/market/orders.html` | 利用者の注文、状態、合計金額、受取コード、キャンセルボタン。 |
+| `templates/market/dashboard.html` | 権限範囲内の注文と集計値、店頭支払い／商品受け渡し確認フォーム。 |
+| `templates/market/lot_form.html` | スタッフ用のロット作成画面。 |
+| `templates/market/login.html`, `signup.html` | 認証画面。処理は `accounts` が担当します。 |
+| `templates/market/pagination.html` | 共通ページネーション部品。 |
+| `static/css/market.css` | 利用者／スタッフ向け Market 画面の responsive style。 |
 
-Các template Market đã được triển khai và render dữ liệu từ database. Template, JavaScript và ảnh cũ ngoài Market vẫn được giữ nguyên.
+Market template は実装済みで、データベースのデータを render します。Market 以外の既存 template、JavaScript、画像は保持しています。
 
-### 12.5. Khung kiểm thử liên app
+### 12.5. app 間テストの雛形
 
-| File/thư mục | Nội dung sẽ thực hiện sau này |
+| ファイル／ディレクトリ | 今後実装する内容 |
 |---|---|
-| `tests/integration/test_customer_flow.py` | Luồng đăng ký → tìm hàng → đặt → xem mã → hủy; kiểm tra khách chỉ xem/thao tác đơn của mình. |
-| `tests/integration/test_staff_flow.py` | Luồng tạo lô → xem đơn đúng chi nhánh → xác nhận thu tiền/giao hàng; kiểm tra vượt quyền. |
-| `tests/concurrency/test_inventory.py` | Kiểm thử trên PostgreSQL: đặt đồng thời, chống vượt tồn, hoàn tồn một lần và token chống đặt trùng. |
+| `tests/integration/test_customer_flow.py` | 会員登録 → 商品検索 → 予約 → コード確認 → キャンセルのフロー。利用者が自分の注文だけを確認・操作できることを検証します。 |
+| `tests/integration/test_staff_flow.py` | ロット作成 → 正しい店舗の注文確認 → 入金／受け渡し確定のフロー。権限超過を検証します。 |
+| `tests/concurrency/test_inventory.py` | PostgreSQL 上で、同時予約、在庫超過防止、一度だけの在庫復元、token による重複予約防止を検証します。 |
 
-Kiểm thử nghiệp vụ tập trung hiện nằm trong `market/tests.py`; các file test liên app và test đồng thời PostgreSQL vẫn là khung. Không có `requirements-lock.txt`; migrations nghiệp vụ đã được tạo, còn dữ liệu demo chỉ được ghi khi chủ động chạy `seed_demo`.
+現在の業務テストは `market/tests.py` に集約されています。app 間テストと PostgreSQL 同時実行テストの各ファイルは、まだ雛形です。`requirements-lock.txt` はありません。業務 migration は作成済みで、デモデータは `seed_demo` を明示的に実行した場合にだけ書き込まれます。
 
-## 13. Nguyên tắc phát triển sau khi có cấu trúc
+## 13. 構成作成後の開発原則
 
-- **Luồng đọc:** URL → view → selector → ORM → template. Truy vấn dùng chung nằm trong app sở hữu dữ liệu; `market/selectors.py` chỉ tổng hợp khi cần.
-- **Luồng ghi:** URL → view → form → service → ORM. Mọi thay đổi tồn kho/trạng thái đơn đi qua `market/services.py`, kể cả từ management commands; không viết trực tiếp trong views hoặc Admin.
-- **Phân quyền:** dùng `stores/permissions.py` để kiểm tra Membership phía server; không dựa vào việc ẩn nút trên giao diện.
-- **Ranh giới app:** `stores` sở hữu chuỗi/chi nhánh/quyền; `products` sở hữu sản phẩm/lô; `reservations` sở hữu đơn; `accounts` sở hữu tài khoản; `market` điều phối giao dịch giữa chúng.
-- **Mở rộng:** khi viết code mới thêm phân trang, chỉ mục và tối ưu truy vấn theo nhu cầu thực tế; giữ transaction ngắn và kiểm thử đồng thời trên PostgreSQL. Không thêm hạ tầng chưa cần cho MVP.
-- **Trạng thái nghiệp vụ:** Market MVP đã có models, migrations, services, giao diện và kiểm thử trên SQLite. Kiểm thử khóa đồng thời trên PostgreSQL và cấu hình production vẫn chưa được thực hiện.
+- **読み取りフロー：** URL → view → selector → ORM → template。共通クエリはデータを所有する app に置き、`market/selectors.py` は必要な場合だけ集約します。
+- **書き込みフロー：** URL → view → form → service → ORM。management command からの操作を含め、在庫／注文状態の変更はすべて `market/services.py` を経由します。views または Admin から直接変更しません。
+- **権限：** `stores/permissions.py` でサーバー側の Membership を検証します。画面上でボタンを非表示にすることだけに依存しません。
+- **app の境界：** `stores` はチェーン／店舗／権限、`products` は商品／ロット、`reservations` は注文、`accounts` はアカウントを所有し、`market` がそれらの間の取引を調整します。
+- **拡張：** 新しいコードには、実際の必要性に応じてページネーション、index、クエリ最適化を追加します。transaction を短く保ち、PostgreSQL 上で同時実行テストを行います。MVP に不要な基盤は追加しません。
+- **業務実装の状態：** Market MVP の models、migrations、services、画面、SQLite 上のテストは実装済みです。PostgreSQL の同時実行ロックテストと本番環境設定は未実施です。
 
-## 14. Cập nhật giao diện phase 1–2
+## 14. Phase 1–2 画面更新
 
-Đã áp dụng các file giao diện từ `food_rescue_ui_refactor_phase12.zip`. Tài liệu gốc của bản cập nhật được giữ cục bộ tại `docs/ui-refactor-phase12.md`; thư mục `docs/` không được Git theo dõi. Đặc tả và cấu trúc dự án vẫn được ghi trong README này.
+`food_rescue_ui_refactor_phase12.zip` の画面ファイルを適用済みです。更新元の資料はローカルの `docs/ui-refactor-phase12.md` に保存し、`docs/` は Git の追跡対象外です。プロジェクトの仕様と構成は引き続きこの README に記載します。
 
-- `/products/`: giao diện Top với hero xanh và các card giới thiệu mẫu. Trang tiếp tục dùng kiểm tra đăng nhập khách hàng hiện có.
-- `/products/list/`: danh sách dữ liệu Market đang có thể đặt, hỗ trợ tìm kiếm theo sản phẩm/cửa hàng, lọc chi nhánh, phân trang, trạng thái rỗng và liên kết đến chi tiết lô.
-- `products/templates/products/top.html`: ghép bốn partial trong `products/templates/products/partials/` cho hero, tìm kiếm, sản phẩm và hướng dẫn.
-- `static/css/common.css`: giao diện dùng chung của trang Top; `static/css/top.css`: bố cục nội dung Top; `static/js/top.js`: lọc card mẫu, thông báo vị trí và ảnh thay thế.
-- `/stores/` và `/stores/product/new/`: trang mẫu dùng `shop_base.html` và `static/css/stores.css`, thể hiện rõ các chức năng đang chờ triển khai.
-- Bản giao diện này dùng tiếng Nhật và giá mẫu bằng yên theo ZIP; ngôn ngữ/tiền tệ trong đặc tả nghiệp vụ phía trên vẫn là yêu cầu cho bản triển khai sau.
+- `/products/`：緑色の hero とサンプル紹介 card を持つトップ画面。既存の利用者ログイン確認を引き続き使用します。
+- `/products/list/`：予約可能な Market データの一覧。商品／店舗名の検索、店舗絞り込み、ページネーション、空状態、ロット詳細へのリンクに対応します。
+- `products/templates/products/top.html`：hero、検索、商品、利用方法を示す `products/templates/products/partials/` 内の 4 つの partial を組み合わせます。
+- `static/css/common.css`：トップ画面の共通 UI。`static/css/top.css`：トップ画面のコンテンツレイアウト。`static/js/top.js`：サンプル card の絞り込み、位置情報メッセージ、代替画像。
+- `/stores/` と `/stores/product/new/`：`shop_base.html` と `static/css/stores.css` を使用するサンプル画面。未実装の機能を明示します。
+- この画面版では ZIP に合わせて日本語と円のサンプル価格を使用します。上記の業務仕様にある言語／通貨は、今後の実装でも維持する要件です。
 
-Sản phẩm, tên cửa hàng, giá và mức giảm trên trang Top `/products/` vẫn là dữ liệu UI mẫu; tìm kiếm/danh mục tại đó chỉ lọc các card có sẵn và vị trí chưa nối API. Luồng Market tại `/` dùng dữ liệu database và đã có xử lý lô, đặt/hủy đơn, tồn kho, hạn dùng và nhận hàng tại quầy.
+トップ画面 `/products/` の商品、店舗名、価格、割引率は引き続き UI 用サンプルデータです。そこでの検索／カテゴリは既存 card の絞り込みだけを行い、位置情報 API には接続していません。`/` の Market フローはデータベースのデータを使用し、ロット、予約／キャンセル、在庫、使用期限、店頭受取の処理を実装済みです。
 
-Kiểm tra các file static và cấu hình:
+static file と設定の確認：
 
 ```powershell
 python manage.py findstatic css/common.css css/top.css css/stores.css js/top.js
 python manage.py check
 ```
 
-Để xem trang Top, chạy server và đăng nhập bằng tài khoản khách hàng hiện có, rồi mở `/products/`.
+トップ画面を確認するには、server を起動し、既存の利用者アカウントでログインして `/products/` を開いてください。

@@ -1,5 +1,5 @@
 <header class="topbar">
-  <a class="brand" href="{% if portal == 'shop' %}{% url 'accounts:shop_login' %}{% else %}{% url 'accounts:customer_login' %}{% endif %}">
+  <a class="brand" href="{% if portal == 'shop' %}{% url 'accounts:shop_login' %}{% else %}{% url 'products:top' %}{% endif %}">
     <span class="brand-mark">✿</span>
     <span>食品ロス削減
       <span style="display:block;font-size:10px;font-weight:500">
