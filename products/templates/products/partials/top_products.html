@@ -1,0 +1,119 @@
+{% load static %}
+{# Top専用：UI確認用の商品カード。実データはフェーズ3でDB連携する。 #}
+<section class="fr-featured" id="products" aria-labelledby="fr-products-heading">
+  <div class="fr-section-heading">
+    <div>
+      <span class="fr-kicker">TODAY'S DISCOVERY</span>
+      <h2 id="fr-products-heading">おトクな食品を探そう <span aria-hidden="true">✨</span></h2>
+      <p>お店の食品を、おトクに。今は画面確認用のサンプルを表示しています。</p>
+    </div>
+    <span class="fr-demo-label">UIサンプル</span>
+  </div>
+
+  <div class="fr-product-grid" id="frProductGrid" data-placeholder-url="{% static 'images/placeholder.svg' %}">
+    <article class="fr-product-card" data-category="bread" data-search="パンセット パン ぱん ベーカリー">
+      <div class="fr-product-photo fr-tone-bread">
+        <img src="{% static 'images/bread.jpg' %}" alt="パンセット" loading="lazy">
+        <span class="fr-discount">40% OFF</span>
+      </div>
+      <div class="fr-product-body">
+        <span class="fr-type">🥐 パン類</span>
+        <h3>パンセット</h3>
+        <p class="fr-store">🏪 ○○ベーカリー</p>
+        <div class="fr-price"><del>500円</del><strong>300<small>円</small></strong></div>
+        <div class="fr-card-foot"><span>店頭受け取り</span><a href="{% url 'products:detail' %}" class="fr-detail-link">詳細を見る →</a></div>
+      </div>
+    </article>
+
+    <article class="fr-product-card" data-category="bento" data-search="日替わり弁当 弁当 お弁当 惣菜 スーパー">
+      <div class="fr-product-photo fr-tone-bento">
+        <img src="{% static 'images/bento.jpg' %}" alt="日替わり弁当" loading="lazy">
+        <span class="fr-discount">38% OFF</span>
+      </div>
+      <div class="fr-product-body">
+        <span class="fr-type">🍱 弁当・惣菜</span>
+        <h3>日替わり弁当</h3>
+        <p class="fr-store">🏪 ○○スーパー</p>
+        <div class="fr-price"><del>650円</del><strong>400<small>円</small></strong></div>
+        <div class="fr-card-foot"><span>店頭受け取り</span><a href="{% url 'products:detail' %}" class="fr-detail-link">詳細を見る →</a></div>
+      </div>
+    </article>
+
+    <article class="fr-product-card" data-category="vegetables" data-search="サラダセット サラダ 野菜 果物 デリ">
+      <div class="fr-product-photo fr-tone-veg">
+        <img src="{% static 'images/vegetable.jpg' %}" alt="サラダセット" loading="lazy">
+        <span class="fr-discount">44% OFF</span>
+      </div>
+      <div class="fr-product-body">
+        <span class="fr-type">🥬 野菜・果物</span>
+        <h3>サラダセット</h3>
+        <p class="fr-store">🏪 ○○デリ</p>
+        <div class="fr-price"><del>450円</del><strong>250<small>円</small></strong></div>
+        <div class="fr-card-foot"><a href="{% url 'products:recipe' %}" class="fr-recipe-link">レシピを見る</a><a href="{% url 'products:detail' %}" class="fr-detail-link">詳細を見る →</a></div>
+      </div>
+    </article>
+
+    <article class="fr-product-card" data-category="drinks" data-search="牛乳 飲料 乳製品 ミルク スーパー">
+      <div class="fr-product-photo fr-tone-drink">
+        <img src="{% static 'images/juice.jpg' %}" alt="飲料・乳製品の商品イメージ" loading="lazy">
+        <span class="fr-discount">33% OFF</span>
+      </div>
+      <div class="fr-product-body">
+        <span class="fr-type">🥛 飲料・乳製品</span>
+        <h3>牛乳</h3>
+        <p class="fr-store">🏪 ○○スーパー</p>
+        <div class="fr-price"><del>150円</del><strong>100<small>円</small></strong></div>
+        <div class="fr-card-foot"><span>店頭受け取り</span><a href="{% url 'products:detail' %}" class="fr-detail-link">詳細を見る →</a></div>
+      </div>
+    </article>
+
+    <article class="fr-product-card" data-category="desserts" data-search="ケーキ デザート 菓子 お菓子 スーパー">
+      <div class="fr-product-photo fr-tone-dessert">
+        <img src="{% static 'images/dessert.jpg' %}" alt="ケーキ" loading="lazy">
+        <span class="fr-discount">38% OFF</span>
+      </div>
+      <div class="fr-product-body">
+        <span class="fr-type">🍰 菓子・デザート</span>
+        <h3>ケーキ</h3>
+        <p class="fr-store">🏪 ○○スーパー</p>
+        <div class="fr-price"><del>800円</del><strong>500<small>円</small></strong></div>
+        <div class="fr-card-foot"><span>店頭受け取り</span><a href="{% url 'products:detail' %}" class="fr-detail-link">詳細を見る →</a></div>
+      </div>
+    </article>
+
+    <article class="fr-product-card" data-category="meat" data-search="豚肉 豚肉パック 肉類 お肉 スーパー">
+      <div class="fr-product-photo fr-tone-meat">
+        <img src="{% static 'images/meat.jpg' %}" alt="豚肉パック" loading="lazy">
+        <span class="fr-discount">38% OFF</span>
+      </div>
+      <div class="fr-product-body">
+        <span class="fr-type">🥩 肉類</span>
+        <h3>豚肉パック</h3>
+        <p class="fr-store">🏪 ○○スーパー</p>
+        <div class="fr-price"><del>800円</del><strong>500<small>円</small></strong></div>
+        <div class="fr-card-foot"><a href="{% url 'products:recipe' %}" class="fr-recipe-link">レシピを見る</a><a href="{% url 'products:detail' %}" class="fr-detail-link">詳細を見る →</a></div>
+      </div>
+    </article>
+  </div>
+
+  <div id="frEmpty" class="fr-empty" hidden role="status">
+    <div aria-hidden="true">🔎</div>
+    <h3>該当する商品がありません</h3>
+    <p>別の商品名やカテゴリーをお試しください。</p>
+    <button id="frReset" type="button">条件をクリア</button>
+  </div>
+
+  <div class="fr-list-action">
+    <a href="{% url 'products:list' %}">商品一覧を見る <span aria-hidden="true">→</span></a>
+  </div>
+  <p class="fr-prototype-note">※ 価格・割引率・商品・店舗名は画面確認用のサンプルです。実際の在庫・期限・予約機能は未実装です。</p>
+</section>
+
+<section class="fr-savings-banner" aria-label="お買い得商品">
+  <div>
+    <span class="fr-kicker">SAVE MORE, WASTE LESS</span>
+    <h2>まだおいしいを、おトクに。</h2>
+    <p>お買い得商品をチェックして、食品ロス削減に参加しましょう。</p>
+  </div>
+  <a href="{% url 'products:list' %}">お買い得商品を見る →</a>
+</section>

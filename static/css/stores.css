@@ -1,0 +1,120 @@
+/* ========================================
+   店舗向けページ：ダッシュボード・商品登録
+   ログイン・共通ヘッダーは既存の style.css を利用
+   ======================================== */
+
+.store-page {
+    width: min(100% - 36px, 980px);
+    min-height: min(68vh, 680px);
+    margin: 40px auto 72px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.store-panel {
+    width: 100%;
+    max-width: 720px;
+    padding: 40px 36px;
+    background: #fff;
+    border: 1px solid #d9e8e0;
+    border-radius: 20px;
+    box-shadow: 0 15px 45px rgba(16, 91, 78, 0.08);
+    text-align: center;
+}
+
+.store-panel__eyebrow {
+    display: inline-block;
+    margin-bottom: 10px;
+    color: #146c5b;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .09em;
+}
+
+.store-panel__title {
+    margin: 0 0 12px;
+    color: #103f36;
+    font-size: clamp(23px, 3vw, 30px);
+    line-height: 1.35;
+}
+
+.store-panel__description {
+    margin: 0 auto;
+    max-width: 500px;
+    color: #697971;
+    font-size: 14px;
+    line-height: 1.9;
+}
+
+.store-panel__actions {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 26px;
+}
+
+.store-action {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 44px;
+    padding: 11px 20px;
+    border: 1px solid #146c5b;
+    border-radius: 10px;
+    background: #146c5b;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background .2s ease, border-color .2s ease;
+}
+
+.store-action:hover {
+    background: #0d5244;
+    border-color: #0d5244;
+    color: #fff;
+    text-decoration: none;
+}
+
+.store-action--secondary {
+    background: white;
+    color: #146c5b;
+}
+
+.store-action--secondary:hover {
+    background: #eaf5ee;
+    border-color: #146c5b;
+    color: #146c5b;
+}
+
+.store-action:focus-visible {
+    outline: 3px solid #93d5bb;
+    outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+    .store-page {
+        width: calc(100% - 28px);
+        min-height: auto;
+        margin: 20px auto 48px;
+    }
+
+    .store-panel {
+        padding: 30px 20px;
+        border-radius: 16px;
+    }
+
+    .store-panel__actions {
+        flex-direction: column;
+    }
+
+    .store-action {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .store-action { transition: none; }
+}

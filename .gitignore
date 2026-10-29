@@ -19,3 +19,8 @@ __pycache__/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Local Codex instructions, skills, and project settings
+/AGENTS.md
+/.agents/
+/.codex/

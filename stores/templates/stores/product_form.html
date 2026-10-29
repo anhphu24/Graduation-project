@@ -1,9 +1,24 @@
-{% extends 'base.html' %}
+{% extends 'shop_base.html' %}
+{% load static %}
+
 {% block title %}商品登録｜食品ロス削減{% endblock %}
-{% block body %}
-<main style="max-width:720px;margin:90px auto;padding:36px;background:white;border-radius:20px;text-align:center">
-  <h1>商品登録</h1>
-  <p>この画面は現在開発中です。（UIサンプル未提供）</p>
-  <a href="{% url 'core:index' %}">トップページに戻る</a>
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/stores.css' %}">
+{% endblock %}
+
+{% block page_content %}
+<main class="store-page">
+  <section class="store-panel" aria-labelledby="store-product-form-title">
+    <span class="store-panel__eyebrow">PRODUCT MANAGEMENT</span>
+    <h1 id="store-product-form-title" class="store-panel__title">商品登録</h1>
+    <p class="store-panel__description">
+      商品登録機能は現在開発中です。<br>
+      登録フォームとデータベース連携はまだ実装されていません。
+    </p>
+    <div class="store-panel__actions">
+      <a class="store-action store-action--secondary" href="{% url 'stores:dashboard' %}">ダッシュボードに戻る</a>
+    </div>
+  </section>
 </main>
 {% endblock %}

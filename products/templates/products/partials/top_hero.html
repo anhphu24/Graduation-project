@@ -1,0 +1,20 @@
+{# Top専用：メインビジュアル #}
+<section class="fr-hero" aria-labelledby="fr-hero-title">
+  <div class="fr-hero-copy">
+    <span class="fr-eyebrow"><span class="fr-live-dot" aria-hidden="true"></span> FOOD RESCUE ・ 食品ロスを減らすお買い物</span>
+    <h1 id="fr-hero-title">今日のおトクを、<br><em>見つけよう。</em></h1>
+    <p class="fr-greeting">
+      こんにちは、{% if request.user.last_name or request.user.first_name %}{{ request.user.last_name }} {{ request.user.first_name }}さん{% else %}お客様{% endif %}！
+    </p>
+    <p class="fr-hero-text">まだおいしい食品を、もっと身近に。<br>おトクに選んで、お店で受け取る。毎日の小さな選択が食品ロスを減らします。</p>
+    <a href="#products" class="fr-hero-cta">商品を見てみる <span aria-hidden="true">↗</span></a>
+  </div>
+  <div class="fr-hero-art" aria-hidden="true">
+    <span class="fr-art-splash"></span>
+    <span class="fr-art-basket">🛍️</span>
+    <span class="fr-art-food fr-art-food-1">🥐</span>
+    <span class="fr-art-food fr-art-food-2">🥬</span>
+    <span class="fr-art-food fr-art-food-3">🍓</span>
+    <span class="fr-art-caption">GOOD FOOD,<br>LESS WASTE.</span>
+  </div>
+</section>

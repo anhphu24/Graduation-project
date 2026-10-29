@@ -1,0 +1,26 @@
+{# Top専用：検索エリア・カテゴリーフィルター（DB検索は未実装） #}
+<section class="fr-discover" aria-label="商品・店舗検索">
+  <form class="fr-search" id="frSearchForm" action="{% url 'products:list' %}" method="get" role="search">
+    <label for="frSearchInput">🔎 <span>商品を探す</span></label>
+    <input id="frSearchInput" name="q" type="search" placeholder="商品名で検索（例：パン・弁当）" autocomplete="off">
+    <button type="submit" class="fr-search-button">検索 <span aria-hidden="true">→</span></button>
+  </form>
+  <div class="fr-search-divider" aria-hidden="true"></div>
+  <div class="fr-location-area">
+    <button id="locationButton" type="button" class="fr-location-button">📍 近くのお店を探す</button>
+    <p id="locationMessage" class="fr-location-message" role="status" aria-live="polite"></p>
+  </div>
+</section>
+
+<section class="fr-categories" aria-label="商品カテゴリー">
+  <p class="fr-categories-title">カテゴリーから探す</p>
+  <div class="fr-chip-list" id="frCategoryList">
+    <button type="button" class="fr-chip is-active" data-category="all" aria-pressed="true">✨ すべて</button>
+    <button type="button" class="fr-chip" data-category="bread" aria-pressed="false">🥐 パン類</button>
+    <button type="button" class="fr-chip" data-category="bento" aria-pressed="false">🍱 弁当・惣菜</button>
+    <button type="button" class="fr-chip" data-category="vegetables" aria-pressed="false">🥬 野菜・果物</button>
+    <button type="button" class="fr-chip" data-category="drinks" aria-pressed="false">🥛 飲料・乳製品</button>
+    <button type="button" class="fr-chip" data-category="desserts" aria-pressed="false">🍰 菓子・デザート</button>
+    <button type="button" class="fr-chip" data-category="meat" aria-pressed="false">🥩 肉類</button>
+  </div>
+</section>

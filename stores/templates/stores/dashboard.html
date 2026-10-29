@@ -1,9 +1,25 @@
-{% extends 'base.html' %}
+{% extends 'shop_base.html' %}
+{% load static %}
+
 {% block title %}店舗ダッシュボード｜食品ロス削減{% endblock %}
-{% block body %}
-<main style="max-width:720px;margin:90px auto;padding:36px;background:white;border-radius:20px;text-align:center">
-  <h1>店舗ダッシュボード</h1>
-  <p>この画面は現在開発中です。（UIサンプル未提供）</p>
-  <a href="{% url 'core:index' %}">トップページに戻る</a>
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/stores.css' %}">
+{% endblock %}
+
+{% block page_content %}
+<main class="store-page">
+  <section class="store-panel" aria-labelledby="store-dashboard-title">
+    <span class="store-panel__eyebrow">SHOP PARTNER</span>
+    <h1 id="store-dashboard-title" class="store-panel__title">店舗ダッシュボード</h1>
+    <p class="store-panel__description">
+      店舗向け管理画面は現在開発中です。<br>
+      商品登録・在庫管理・予約確認は今後実装します。
+    </p>
+    <div class="store-panel__actions">
+      <a class="store-action" href="{% url 'stores:product_form' %}">商品登録画面へ</a>
+      <a class="store-action store-action--secondary" href="{% url 'core:index' %}">トップページに戻る</a>
+    </div>
+  </section>
 </main>
 {% endblock %}
