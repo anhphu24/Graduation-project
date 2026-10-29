@@ -19,6 +19,7 @@ INSTALLED_APPS = [
     'products',
     'stores',
     'reservations',
+    'market',
 ]
 
 MIDDLEWARE = [
@@ -43,6 +44,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'market.context_processors.market_settings',
             ],
         },
     },
@@ -65,6 +67,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'ja'
 TIME_ZONE = 'Asia/Tokyo'
+CURRENCY = os.environ.get('CURRENCY', 'JPY')
 USE_I18N = True
 USE_TZ = True
 STATIC_URL = 'static/'

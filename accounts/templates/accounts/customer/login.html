@@ -49,6 +49,7 @@
               action="{% url 'accounts:customer_login' %}">
 
             {% csrf_token %}
+            <input type="hidden" name="next" value="{{ next|default:'' }}" />
 
             <!-- メールアドレス -->
             <div class="field">

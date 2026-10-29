@@ -1,1 +1,7 @@
-{# TODO: Danh sách lô đang bán và bộ lọc tìm kiếm. #}
+{% extends 'market/base.html' %}
+{% block market_title %}商品を探す{% endblock %}
+{% block market_content %}
+<section class="market-hero"><p class="market-kicker">FOOD RESCUE MARKET</p><h1>まだおいしい商品を、近くのお店で。</h1><p>オンラインで予約し、指定時間に店頭で受け取ってお支払いください。</p></section>
+<form class="market-search" method="get" role="search"><div>{{ form.q.label_tag }}{{ form.q }}</div><div>{{ form.branch.label_tag }}{{ form.branch }}</div><button type="submit">検索</button></form>
+{% include 'market/partials/lot_results.html' with page=page %}
+{% endblock %}

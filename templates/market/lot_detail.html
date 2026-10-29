@@ -1,1 +1,10 @@
-{# TODO: Thông tin lô, dị ứng, bảo quản, hạn dùng và biểu mẫu giữ hàng. #}
+{% extends 'market/base.html' %}
+{% block market_title %}{{ lot.product.name }}{% endblock %}
+{% block market_content %}
+<a class="market-back" href="{% url 'products:list' %}">← 商品一覧に戻る</a>
+<article class="market-detail"><div class="market-detail-image">{% if lot.product.image_url %}<img src="{{ lot.product.image_url }}" alt="{{ lot.product.name }}">{% else %}<span aria-hidden="true">🥕</span>{% endif %}</div><div class="market-detail-body"><p class="market-card-shop">{{ lot.branch.chain.name }}・{{ lot.branch.name }}</p><h1>{{ lot.product.name }}</h1><p>{{ lot.product.description|default:'商品説明は準備中です。' }}</p>
+<dl class="market-facts"><div><dt>受取店舗</dt><dd>{{ lot.branch.name }}<br>{{ lot.branch.address }}</dd></div><div><dt>アレルギー情報</dt><dd>{{ lot.product.allergens|default:'登録なし' }}</dd></div><div><dt>保存方法</dt><dd>{{ lot.product.storage_instructions|default:'登録なし' }}</dd></div><div><dt>{{ lot.product.get_expiry_type_display }}</dt><dd>{{ lot.expires_at|date:'Y/m/d H:i' }}</dd></div><div><dt>受取時間</dt><dd>{{ lot.pickup_start|date:'Y/m/d H:i' }}〜{{ lot.pickup_end|date:'Y/m/d H:i' }}</dd></div></dl>
+<div class="market-detail-price"><del>{{ lot.original_price|floatformat:0 }} {{ MARKET_CURRENCY }}</del><strong>{{ lot.sale_price|floatformat:0 }} {{ MARKET_CURRENCY }}</strong><span>残り{{ lot.available_quantity }}点</span></div>
+{% if request.user.is_authenticated %}<form class="market-reserve" method="post" action="{% url 'market:reserve' lot.pk %}">{% csrf_token %}{{ form.request_token }}{{ form.non_field_errors }}<label for="{{ form.quantity.id_for_label }}">{{ form.quantity.label }}</label>{{ form.quantity }}{{ form.quantity.errors }}<button class="market-button" type="submit">この商品を予約する</button><small>お支払いは受取時に店頭で行います。</small></form>{% else %}<a class="market-button" href="{% url 'accounts:customer_login' %}?next={{ request.path|urlencode }}">ログインして予約する</a>{% endif %}
+</div></article>
+{% endblock %}

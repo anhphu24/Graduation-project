@@ -1,9 +1,18 @@
-{% extends 'base.html' %}
-{% block title %}商品一覧・検索｜食品ロス削減{% endblock %}
-{% block body %}
-<main style="max-width:720px;margin:90px auto;padding:36px;background:white;border-radius:20px;text-align:center">
-  <h1>商品一覧・検索</h1>
-  <p>この画面は現在開発中です。（UIサンプル未提供）</p>
-  <a href="{% url 'core:index' %}">トップページに戻る</a>
-</main>
+{% extends 'market/base.html' %}
+{% block market_title %}商品一覧・検索{% endblock %}
+{% block market_content %}
+<div class="market-section-head">
+  <div>
+    <p class="market-kicker">AVAILABLE PRODUCTS</p>
+    <h1>商品一覧・検索</h1>
+    <p>予約できる商品を、キーワードや受取店舗から探せます。</p>
+  </div>
+  <a class="market-button market-button--secondary" href="{% url 'products:top' %}">トップへ戻る</a>
+</div>
+<form class="market-search" method="get" role="search">
+  <div>{{ form.q.label_tag }}{{ form.q }}{{ form.q.errors }}</div>
+  <div>{{ form.branch.label_tag }}{{ form.branch }}{{ form.branch.errors }}</div>
+  <button type="submit">検索</button>
+</form>
+{% include 'market/partials/lot_results.html' with page=page %}
 {% endblock %}

@@ -1,1 +1,5 @@
-# TODO: Biểu mẫu tìm kiếm dùng chung; tái sử dụng form chuyên biệt từ các app nghiệp vụ.
+from products.forms import ProductListFilterForm
+
+
+class LotSearchForm(ProductListFilterForm):
+    """Backward-compatible Market name for the shared product list filter."""

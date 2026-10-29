@@ -1,1 +1,6 @@
-# TODO: Khai báo AppConfig khi bắt đầu triển khai ứng dụng market.
+from django.apps import AppConfig
+
+
+class MarketConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "market"

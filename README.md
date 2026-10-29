@@ -1,16 +1,15 @@
 # Food Rescue — Hệ thống giảm lãng phí thực phẩm
 
-> **Trạng thái hiện tại: chuẩn bị cấu trúc dự án, chưa triển khai nghiệp vụ mới.**
-> Các file khung cho nghiệp vụ mới chỉ chứa ghi chú TODO, chưa được nối vào settings hoặc URL hiện có.
-> Mục 1–11 là đặc tả và kế hoạch triển khai sau này; không phải xác nhận các chức năng đã hoạt động.
-> Xem mục 12–13 để biết cấu trúc thư mục, trách nhiệm từng file và nguyên tắc viết code về sau.
-> Đã áp dụng giao diện mẫu phase 1–2 từ `food_rescue_ui_refactor_phase12.zip`: trang Top tiếng Nhật và các trang mẫu cho cửa hàng. Xem mục 14; nghiệp vụ Food Rescue mới vẫn chưa được triển khai.
+> **Trạng thái hiện tại: Market MVP đã được triển khai trong Django monolith.**
+> Luồng danh sách/chi tiết lô, đặt và hủy đơn, tạo lô, xác nhận nhận tiền, hết hạn đơn và phân quyền Membership đã được nối vào settings/URL.
+> Models và migrations nghiệp vụ đã có; cần chạy `python manage.py migrate` trước khi sử dụng trên database cục bộ. Không xem SQLite là bằng chứng an toàn đồng thời cho production.
+> Giao diện Top phase 1–2 vẫn dùng dữ liệu mẫu riêng tại `/products/`; giao diện Market dùng dữ liệu database tại `/`.
 
 Ứng dụng Django cho chuỗi siêu thị/cửa hàng tiện lợi đăng thực phẩm gần hết hạn. Khách đặt online, đến đúng chi nhánh nhận hàng và thanh toán tại quầy. Bản MVP không thu tiền online, không giao hàng.
 
 ## 1. Phạm vi và giả định
 
-- Giao diện tiếng Việt; tiền tệ mặc định VND, múi giờ Asia/Ho_Chi_Minh, có thể cấu hình bằng biến môi trường.
+- Giao diện hiện dùng tiếng Nhật để đồng bộ với dự án có sẵn; tiền tệ mặc định JPY và múi giờ Asia/Tokyo. Đơn vị tiền tệ có thể đổi bằng biến môi trường `CURRENCY`.
 - Một đơn = một lô hàng tại một chi nhánh, số lượng do khách chọn. Giỏ nhiều sản phẩm là giai đoạn sau.
 - Nhân viên nhập lô hàng thủ công. Chưa tích hợp POS, ERP hay tự động đọc hạn dùng.
 - Lô hàng tự xuất hiện khi được bật và đang trong thời gian cho phép đặt. Hạn đặt < hạn nhận ≤ hạn sử dụng.
@@ -99,11 +98,11 @@ Trạng thái: RESERVED → COLLECTED hoặc CANCELLED hoặc EXPIRED. Chỉ COL
 
 Không có API công khai/DRF trong MVP; đây là ứng dụng HTML server-rendered hoàn chỉnh cho các luồng trên.
 
-## 7. Quy trình chạy dự kiến sau khi triển khai
+## 7. Quy trình chạy
 
 Yêu cầu Python 3.11+.
 
-Các bước dưới đây là mục tiêu cho bản có nghiệp vụ hoàn chỉnh. Hiện tại `market` chưa được đăng ký, `seed_demo` và `expire_orders` chỉ là file ghi chú; chưa thể dùng hai lệnh này. Chưa có migrations cho các mô hình nghiệp vụ mới. Mã nguồn và migrations tài khoản có sẵn được giữ nguyên.
+`market` đã được đăng ký; migrations nghiệp vụ, `seed_demo` và `expire_orders` đã được triển khai. Mã nguồn và migrations tài khoản có sẵn được giữ nguyên.
 
 ```bash
 python -m venv .venv
@@ -180,25 +179,25 @@ Project_Graduation/
 │   ├── services.py                  [khung]
 │   └── selectors.py                 [khung]
 ├── stores/
-│   ├── models.py, views.py, urls.py  [có sẵn]
-│   ├── apps.py, admin.py, tests.py   [có sẵn]
-│   ├── migrations/                  [có sẵn]
+│   ├── models.py, admin.py           [đã triển khai cho Market MVP]
+│   ├── views.py, urls.py, tests.py   [có sẵn]
+│   ├── migrations/                  [đã có migration nghiệp vụ]
 │   ├── forms.py                     [khung]
-│   ├── permissions.py               [khung]
-│   └── selectors.py                 [khung]
+│   ├── permissions.py               [đã triển khai]
+│   └── selectors.py                 [đã triển khai]
 ├── products/
-│   ├── models.py, views.py, urls.py  [có sẵn]
-│   ├── apps.py, admin.py, tests.py   [có sẵn]
-│   ├── migrations/                  [có sẵn]
-│   ├── forms.py                     [khung]
-│   └── selectors.py                 [khung]
+│   ├── models.py, admin.py           [đã triển khai cho Market MVP]
+│   ├── views.py, urls.py, tests.py   [có sẵn]
+│   ├── migrations/                  [đã có migration nghiệp vụ]
+│   ├── forms.py                     [đã triển khai form lô]
+│   └── selectors.py                 [đã triển khai truy vấn lô]
 ├── reservations/
-│   ├── models.py, views.py, urls.py  [có sẵn]
-│   ├── apps.py, admin.py, tests.py   [có sẵn]
-│   ├── migrations/                  [có sẵn]
-│   ├── forms.py                     [khung]
-│   └── selectors.py                 [khung]
-├── market/                          [toàn bộ là khung]
+│   ├── models.py, admin.py           [đã triển khai cho Market MVP]
+│   ├── views.py, urls.py, tests.py   [có sẵn]
+│   ├── migrations/                  [đã có migration nghiệp vụ]
+│   ├── forms.py                     [đã triển khai form đặt/nhận]
+│   └── selectors.py                 [đã triển khai truy vấn đơn]
+├── market/                          [đã triển khai Market MVP]
 │   ├── __init__.py
 │   ├── apps.py
 │   ├── urls.py
@@ -217,7 +216,7 @@ Project_Graduation/
 ├── core/                            [có sẵn, các trang chung/bản mẫu]
 ├── templates/
 │   ├── ...                          [template có sẵn được giữ nguyên]
-│   └── market/                      [toàn bộ là khung]
+│   └── market/                      [đã triển khai]
 │       ├── base.html
 │       ├── lot_list.html
 │       ├── lot_detail.html
@@ -230,7 +229,7 @@ Project_Graduation/
 ├── static/
 │   ├── css/
 │   │   ├── ...                      [CSS có sẵn]
-│   │   └── market.css               [khung]
+│   │   └── market.css               [đã triển khai]
 │   ├── js/                          [có sẵn]
 │   └── images/                      [có sẵn]
 └── tests/                           [toàn bộ là khung]
@@ -283,7 +282,7 @@ Trong các app đã có, `apps.py` khai báo ứng dụng; `admin.py` dành cho 
 
 `market` nối các app nghiệp vụ thành luồng khách hàng/nhân viên. Models thuộc app sở hữu dữ liệu, không định nghĩa lặp lại trong `market`.
 
-| File | Nội dung sẽ thực hiện sau này |
+| File | Nội dung hiện tại |
 |---|---|
 | `apps.py` | Khai báo `MarketConfig`, sau đó mới đăng ký app trong settings. |
 | `urls.py` | Định tuyến các endpoint trong mục 6. URL đăng nhập/đăng ký thuộc `accounts`. |
@@ -296,11 +295,11 @@ Trong các app đã có, `apps.py` khai báo ứng dụng; `admin.py` dành cho 
 | `management/commands/expire_orders.py` | Lệnh dọn đơn quá hạn theo từng batch, gọi services; dự kiến được cron/Task Scheduler gọi định kỳ. |
 | `management/commands/seed_demo.py` | Tạo dữ liệu minh họa qua services; không tạo mật khẩu mặc định hoặc ghi đè dữ liệu giao dịch. |
 
-Các file `__init__.py` đánh dấu package Python. Chúng chỉ có chú thích ở bước này, không import hoặc chạy nghiệp vụ khi nạp package.
+Các file `__init__.py` chỉ đánh dấu package Python và không chạy nghiệp vụ khi nạp package.
 
 ### 12.4. Giao diện và tài nguyên
 
-| File | Nội dung sẽ thực hiện sau này |
+| File | Nội dung hiện tại |
 |---|---|
 | `templates/market/base.html` | Khung HTML chung, điều hướng, vùng nội dung và thông báo. |
 | `templates/market/lot_list.html` | Danh sách lô và tìm kiếm/lọc. |
@@ -310,9 +309,9 @@ Các file `__init__.py` đánh dấu package Python. Chúng chỉ có chú thíc
 | `templates/market/lot_form.html` | Trang nhân viên tạo lô. |
 | `templates/market/login.html`, `signup.html` | Giao diện xác thực; phần xử lý thuộc `accounts`. |
 | `templates/market/pagination.html` | Thành phần phân trang dùng chung. |
-| `static/css/market.css` | Style cho giao diện mới khi bắt đầu xây dựng UI. |
+| `static/css/market.css` | Style responsive cho giao diện khách hàng và nhân viên Market. |
 
-Các template mới chỉ chứa comment Django; CSS mới chỉ chứa comment. Chưa có giao diện hoặc hành vi mới được triển khai. Template, JavaScript và ảnh cũ vẫn giữ nguyên.
+Các template Market đã được triển khai và render dữ liệu từ database. Template, JavaScript và ảnh cũ ngoài Market vẫn được giữ nguyên.
 
 ### 12.5. Khung kiểm thử liên app
 
@@ -322,7 +321,7 @@ Các template mới chỉ chứa comment Django; CSS mới chỉ chứa comment.
 | `tests/integration/test_staff_flow.py` | Luồng tạo lô → xem đơn đúng chi nhánh → xác nhận thu tiền/giao hàng; kiểm tra vượt quyền. |
 | `tests/concurrency/test_inventory.py` | Kiểm thử trên PostgreSQL: đặt đồng thời, chống vượt tồn, hoàn tồn một lần và token chống đặt trùng. |
 
-Chưa có test case được viết hoặc kết quả kiểm thử nghiệp vụ cho cấu trúc mới. Không có `requirements-lock.txt`, migrations nghiệp vụ hay dữ liệu demo được tạo trong bước chuẩn bị này.
+Kiểm thử nghiệp vụ tập trung hiện nằm trong `market/tests.py`; các file test liên app và test đồng thời PostgreSQL vẫn là khung. Không có `requirements-lock.txt`; migrations nghiệp vụ đã được tạo, còn dữ liệu demo chỉ được ghi khi chủ động chạy `seed_demo`.
 
 ## 13. Nguyên tắc phát triển sau khi có cấu trúc
 
@@ -331,19 +330,20 @@ Chưa có test case được viết hoặc kết quả kiểm thử nghiệp v�
 - **Phân quyền:** dùng `stores/permissions.py` để kiểm tra Membership phía server; không dựa vào việc ẩn nút trên giao diện.
 - **Ranh giới app:** `stores` sở hữu chuỗi/chi nhánh/quyền; `products` sở hữu sản phẩm/lô; `reservations` sở hữu đơn; `accounts` sở hữu tài khoản; `market` điều phối giao dịch giữa chúng.
 - **Mở rộng:** khi viết code mới thêm phân trang, chỉ mục và tối ưu truy vấn theo nhu cầu thực tế; giữ transaction ngắn và kiểm thử đồng thời trên PostgreSQL. Không thêm hạ tầng chưa cần cho MVP.
-- **Trạng thái khung nghiệp vụ:** mới chuẩn bị folder/file và tài liệu; models, migrations, services, kiểm thử nghiệp vụ và cấu hình triển khai sẽ thực hiện khi được yêu cầu. Riêng giao diện mẫu phase 1–2 đã được áp dụng như mô tả tại mục 14.
+- **Trạng thái nghiệp vụ:** Market MVP đã có models, migrations, services, giao diện và kiểm thử trên SQLite. Kiểm thử khóa đồng thời trên PostgreSQL và cấu hình production vẫn chưa được thực hiện.
 
 ## 14. Cập nhật giao diện phase 1–2
 
 Đã áp dụng các file giao diện từ `food_rescue_ui_refactor_phase12.zip`. Tài liệu gốc của bản cập nhật được giữ cục bộ tại `docs/ui-refactor-phase12.md`; thư mục `docs/` không được Git theo dõi. Đặc tả và cấu trúc dự án vẫn được ghi trong README này.
 
-- `/products/`: giao diện Top mới với hero xanh, tìm kiếm trong các card mẫu, bộ lọc danh mục, trạng thái không có kết quả và hướng dẫn sử dụng. Trang tiếp tục dùng kiểm tra đăng nhập khách hàng hiện có.
+- `/products/`: giao diện Top với hero xanh và các card giới thiệu mẫu. Trang tiếp tục dùng kiểm tra đăng nhập khách hàng hiện có.
+- `/products/list/`: danh sách dữ liệu Market đang có thể đặt, hỗ trợ tìm kiếm theo sản phẩm/cửa hàng, lọc chi nhánh, phân trang, trạng thái rỗng và liên kết đến chi tiết lô.
 - `products/templates/products/top.html`: ghép bốn partial trong `products/templates/products/partials/` cho hero, tìm kiếm, sản phẩm và hướng dẫn.
 - `static/css/common.css`: giao diện dùng chung của trang Top; `static/css/top.css`: bố cục nội dung Top; `static/js/top.js`: lọc card mẫu, thông báo vị trí và ảnh thay thế.
 - `/stores/` và `/stores/product/new/`: trang mẫu dùng `shop_base.html` và `static/css/stores.css`, thể hiện rõ các chức năng đang chờ triển khai.
 - Bản giao diện này dùng tiếng Nhật và giá mẫu bằng yên theo ZIP; ngôn ngữ/tiền tệ trong đặc tả nghiệp vụ phía trên vẫn là yêu cầu cho bản triển khai sau.
 
-Sản phẩm, tên cửa hàng, giá và mức giảm hiện là dữ liệu UI mẫu. Tìm kiếm/danh mục chỉ lọc các card đã có trên trang; vị trí chưa nối API tìm cửa hàng. Chưa có form đăng sản phẩm thực, xử lý đặt hàng, tồn kho hoặc hạn dùng. Các template base, đăng nhập, đăng xuất POST kèm CSRF và các luồng backend có sẵn tiếp tục được sử dụng.
+Sản phẩm, tên cửa hàng, giá và mức giảm trên trang Top `/products/` vẫn là dữ liệu UI mẫu; tìm kiếm/danh mục tại đó chỉ lọc các card có sẵn và vị trí chưa nối API. Luồng Market tại `/` dùng dữ liệu database và đã có xử lý lô, đặt/hủy đơn, tồn kho, hạn dùng và nhận hàng tại quầy.
 
 Kiểm tra các file static và cấu hình:
 

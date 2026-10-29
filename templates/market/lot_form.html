@@ -1,1 +1,3 @@
-{# TODO: Giao diện tạo lô hàng dành cho nhân viên được phân quyền. #}
+{% extends 'market/base.html' %}
+{% block market_title %}商品ロット登録{% endblock %}
+{% block market_content %}<a class="market-back" href="{% url 'market:staff' %}">← ダッシュボードに戻る</a><section class="market-form-panel"><p class="market-kicker">NEW LOT</p><h1>商品ロットを登録</h1><p>権限のある店舗と、同じチェーンの商品だけ登録できます。</p><form method="post">{% csrf_token %}{{ form.non_field_errors }}{% for field in form %}<div class="market-field">{{ field.label_tag }}{{ field }}{{ field.errors }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}</div>{% endfor %}<button class="market-button" type="submit">登録する</button></form></section>{% endblock %}

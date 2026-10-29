@@ -1,1 +1,1 @@
-{# TODO: Giao diện đăng ký tài khoản khách hàng. #}
+{% extends 'market/base.html' %}{% block market_content %}<div class="market-empty"><h1>新規登録</h1><p>利用者登録画面でアカウントを作成してください。</p><a class="market-button" href="{% url 'accounts:customer_signup' %}">登録画面へ</a></div>{% endblock %}

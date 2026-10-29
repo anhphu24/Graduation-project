@@ -1,1 +1,6 @@
-{# TODO: Danh sách đơn của khách, mã nhận, tổng tiền và thao tác hủy. #}
+{% extends 'market/base.html' %}
+{% block market_title %}予約履歴{% endblock %}
+{% block market_content %}
+<div class="market-section-head"><div><p class="market-kicker">MY ORDERS</p><h1>予約履歴・状況</h1></div><a class="market-button market-button--secondary" href="{% url 'products:list' %}">商品を探す</a></div>
+{% if orders %}<div class="market-order-list">{% for order in orders %}<article class="market-order"><div><span class="market-status market-status--{{ order.status }}">{{ order.get_status_display }}</span><h2>{{ order.lot.product.name }}</h2><p>{{ order.lot.branch.chain.name }}・{{ order.lot.branch.name }}</p></div><dl><div><dt>数量</dt><dd>{{ order.quantity }}点</dd></div><div><dt>合計</dt><dd>{{ order.total_price|floatformat:0 }} {{ MARKET_CURRENCY }}</dd></div><div><dt>受取期限</dt><dd>{{ order.pickup_deadline|date:'Y/m/d H:i' }}</dd></div><div><dt>受取コード</dt><dd><code>{{ order.pickup_code }}</code></dd></div></dl>{% if order.status == 'reserved' %}<form method="post" action="{% url 'market:cancel' order.id %}">{% csrf_token %}<button class="market-danger" type="submit">予約をキャンセル</button></form>{% endif %}</article>{% endfor %}</div>{% else %}<div class="market-empty"><span aria-hidden="true">🧾</span><h2>予約はまだありません</h2><p>商品一覧からお得な商品を探してみましょう。</p></div>{% endif %}
+{% endblock %}

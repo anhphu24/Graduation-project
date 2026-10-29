@@ -1,0 +1,39 @@
+<section aria-labelledby="available-lots-title">
+  <div class="market-section-head">
+    <h2 id="available-lots-title">予約できる商品</h2>
+    <span>{{ page.paginator.count }}件</span>
+  </div>
+  {% if page.object_list %}
+    <div class="market-grid">
+      {% for lot in page.object_list %}
+        <article class="market-card">
+          <div class="market-card-image">
+            {% if lot.product.image_url %}
+              <img src="{{ lot.product.image_url }}" alt="{{ lot.product.name }}">
+            {% else %}
+              <span aria-hidden="true">🥕</span>
+            {% endif %}
+          </div>
+          <div class="market-card-body">
+            <p class="market-card-shop">{{ lot.branch.chain.name }}・{{ lot.branch.name }}</p>
+            <h3>{{ lot.product.name }}</h3>
+            <p class="market-card-description">{{ lot.product.description|default:'商品説明は準備中です。'|truncatechars:80 }}</p>
+            <div class="market-price">
+              <del>{{ lot.original_price|floatformat:0 }} {{ MARKET_CURRENCY }}</del>
+              <strong>{{ lot.sale_price|floatformat:0 }} {{ MARKET_CURRENCY }}</strong>
+            </div>
+            <p class="market-meta">残り {{ lot.available_quantity }}点 ・ 予約締切 {{ lot.reserve_end|date:'m/d H:i' }}</p>
+            <a class="market-button" href="{% url 'market:lot_detail' lot.pk %}">詳細を見る</a>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+    {% include 'market/pagination.html' with page=page %}
+  {% else %}
+    <div class="market-empty">
+      <span aria-hidden="true">🔎</span>
+      <h2>条件に合う商品がありません</h2>
+      <p>検索条件を変えてもう一度お試しください。</p>
+    </div>
+  {% endif %}
+</section>
