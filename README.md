@@ -335,7 +335,7 @@ Chưa có test case được viết hoặc kết quả kiểm thử nghiệp v�
 
 ## 14. Cập nhật giao diện phase 1–2
 
-Đã áp dụng các file giao diện từ `food_rescue_ui_refactor_phase12.zip`. [Tài liệu gốc của bản cập nhật](docs/ui-refactor-phase12.md) được lưu riêng để giữ đầy đủ đặc tả và cấu trúc dự án trong README này.
+Đã áp dụng các file giao diện từ `food_rescue_ui_refactor_phase12.zip`. Tài liệu gốc của bản cập nhật được giữ cục bộ tại `docs/ui-refactor-phase12.md`; thư mục `docs/` không được Git theo dõi. Đặc tả và cấu trúc dự án vẫn được ghi trong README này.
 
 - `/products/`: giao diện Top mới với hero xanh, tìm kiếm trong các card mẫu, bộ lọc danh mục, trạng thái không có kết quả và hướng dẫn sử dụng. Trang tiếp tục dùng kiểm tra đăng nhập khách hàng hiện có.
 - `products/templates/products/top.html`: ghép bốn partial trong `products/templates/products/partials/` cho hero, tìm kiếm, sản phẩm và hướng dẫn.
