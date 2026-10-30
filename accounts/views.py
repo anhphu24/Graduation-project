@@ -8,6 +8,7 @@ from .forms import CustomerSignupForm, CustomerLoginForm
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_http_methods
 from .models import Profile
+from django.contrib.auth.decorators import login_required
 
 
 
@@ -220,10 +221,36 @@ def shop_forgot(request):
 # ==============================
 # マイページ
 # ==============================
-
+@login_required
 def mypage(request):
     return render(
         request,
-        'core/coming_soon.html',
+        'accounts/customer/mypage.html',
         {'heading': 'マイページ'}
     )
+
+# ユーザー情報変更  
+#================
+
+@login_required
+def profile_update(request):
+    """ユーザー情報変更画面"""
+    return render(
+        request,
+        'accounts/customer/profile_update.html',
+        {'heading': 'ユーザー情報変更'}
+    )
+@login_required
+def password_change(request):
+    """パスワード変更画面"""
+    return render(request, 'accounts/customer/password_change.html', {'heading': 'パスワード変更'})
+
+@login_required
+def notification_settings(request):
+    """通知設定画面"""
+    return render(request, 'accounts/customer/notification_settings.html', {'heading': '通知設定'})
+
+@login_required
+def delete_account(request):
+    """退会画面"""
+    return render(request, 'accounts/customer/delete_account.html', {'heading': '退会する'})

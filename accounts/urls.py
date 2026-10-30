@@ -14,4 +14,8 @@ urlpatterns = [
     path('shop/login/', views.shop_login, name='shop_login'),
     path('shop/forgot/', views.shop_forgot, name='shop_forgot'),
     path('mypage/', views.mypage, name='mypage'),
+    path('profile/update/', views.profile_update, name='profile_update'),
+    path('password/change/', views.password_change, name='password_change'),
+    path('notification/settings/', views.notification_settings, name='notification_settings'),
+    path('delete/', views.delete_account, name='delete_account'),
 ]

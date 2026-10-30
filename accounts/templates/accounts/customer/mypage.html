@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}マイページ | 食品ロス削減アプリ{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mypage.css' %}">
+{% endblock %}
+
+{% block body %}
+<main class="mypage-main">
+    <div class="mypage-container">
+        <h1>マイページ</h1>
+
+        <!-- ポイント表示 -->
+        <section class="point-user-box" aria-labelledby="point-label">
+            <p id="point-label" class="point-label">保有ポイント</p>
+            <p class="point-value"><strong>{{ user.points|default:0 }}</strong> pt</p>
+        </section>
+
+        <div class="mypage-menu">
+            <!-- ユーザー情報表示 -->
+            <section class="menu-section">
+                <h2>ユーザー情報</h2>
+                <ul class="info-list">
+                    <li><strong>ユーザー名：</strong>{{ user.username }}</li>
+                    <li><strong>メールアドレス：</strong>{{ user.email|default:"未設定" }}</li>
+                </ul>
+            </section>
+
+            <!-- メニューリンク -->
+            <nav class="menu-links" aria-label="アカウント管理メニュー">
+                <ul>
+                    <li><a href="{% url 'accounts:profile_update' %}" class="menu-item">ユーザー情報変更</a></li>
+                    <li><a href="{% url 'accounts:password_change' %}" class="menu-item">パスワード変更</a></li>
+                    <li><a href="{% url 'accounts:notification_settings' %}" class="menu-item">通知設定</a></li>
+                    <li><a href="{% url 'accounts:delete_account' %}" class="menu-item text-danger">退会する</a></li>
+                </ul>
+            </nav>
+        </div>
+
+        <div class="action-buttons">
+            <a href="{% url 'products:top' %}" class="back-button">トップに戻る</a>
+        </div>
+    </div>
+</main>
+{% endblock %}
