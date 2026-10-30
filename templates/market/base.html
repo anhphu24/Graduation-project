@@ -4,18 +4,18 @@
 {% block body_class %}market-page{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/market.css' %}">{% endblock %}
 {% block body %}
-<header class="market-header">
-  <a class="market-brand" href="{% url 'market:lot_list' %}">🌿 食品ロス削減</a>
-  <nav class="market-nav" aria-label="メインナビゲーション">
-    <a href="{% url 'products:top' %}">トップ</a><a href="{% url 'products:list' %}">商品を探す</a>
-    {% if request.user.is_authenticated %}
-      <a href="{% url 'market:orders' %}">予約履歴</a>
-      {% if request.user.store_memberships.exists %}<a href="{% url 'market:staff' %}">店舗管理</a>{% endif %}
-      <form method="post" action="{% url 'accounts:customer_logout' %}">{% csrf_token %}<button type="submit">ログアウト</button></form>
-    {% else %}
-      <a href="{% url 'accounts:customer_login' %}">ログイン</a><a class="market-nav-primary" href="{% url 'market:signup' %}">新規登録</a>
-    {% endif %}
-  </nav>
+  <header class="top-header">
+    <a class="top-logo"
+       href="{% url 'products:top' %}"
+       aria-label="食品ロス削減 トップへ">
+        <span class="top-logo-icon" aria-hidden="true">🌿</span>
+        <span>
+            食品ロス削減
+            <small>おいしいを、ムダにしない。</small>
+        </span>
+    </a>
+
+    {% include 'includes/navbar.html' %}
 </header>
 {% if messages %}<div class="market-messages" aria-live="polite">{% for message in messages %}<p class="market-message market-message--{{ message.tags }}">{{ message }}</p>{% endfor %}</div>{% endif %}
 <main class="market-main">{% block market_content %}{% endblock %}</main>

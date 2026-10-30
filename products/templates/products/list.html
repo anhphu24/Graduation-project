@@ -1,18 +1,283 @@
+
 {% extends 'market/base.html' %}
+{% load static %}
+
 {% block market_title %}商品一覧・検索{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/common.css' %}">
+<link rel="stylesheet" href="{% static 'css/list.css' %}">
+{% endblock %}
+
 {% block market_content %}
-<div class="market-section-head">
-  <div>
-    <p class="market-kicker">AVAILABLE PRODUCTS</p>
-    <h1>商品一覧・検索</h1>
-    <p>予約できる商品を、キーワードや受取店舗から探せます。</p>
-  </div>
-  <a class="market-button market-button--secondary" href="{% url 'products:top' %}">トップへ戻る</a>
+
+<div class="list-main" id="listMain">
+
+    <!-- パンくずリスト -->
+    <nav class="list-breadcrumb" aria-label="パンくずリスト">
+        <a href="{% url 'products:top' %}">トップ</a>
+        <span>›</span>
+        <span id="breadcrumbCurrent">商品一覧</span>
+    </nav>
+
+    <!-- メインタイトル -->
+    <section class="list-hero">
+        <span class="list-kicker">FIND YOUR FAVORITES</span>
+
+        <h1 id="pageTitle">消費期限間近の商品一覧</h1>
+
+        <p id="pageDescription">
+            まだおいしく食べられる商品を、
+            おトクに購入して食品ロスを減らしましょう。
+        </p>
+
+        <div class="list-hero-decoration" aria-hidden="true">
+            🥬 🥕 🍞
+        </div>
+    </section>
+
+    <!-- 検索エリア -->
+    <section class="list-search-panel">
+
+        <!-- 消費期限間近の商品検索 -->
+        <div id="expirySearchArea">
+            <div class="list-panel-heading">
+                <span aria-hidden="true">🔍</span>
+                <h2>商品を探す</h2>
+            </div>
+
+            <form method="get" role="search">
+                <input type="hidden" name="type" value="near_expiry">
+
+                <div class="list-search-row">
+                    <div style="flex: 1; min-width: 0;">
+                        <label class="list-input-label"
+                               for="{{ form.q.id_for_label }}">
+                            商品名で検索
+                        </label>
+                        {{ form.q }}
+                        {{ form.q.errors }}
+                    </div>
+
+                    <div style="flex: 1; min-width: 0;">
+                        <label class="list-input-label"
+                               for="{{ form.branch.id_for_label }}">
+                            受取店舗
+                        </label>
+                        {{ form.branch }}
+                        {{ form.branch.errors }}
+                    </div>
+                </div>
+
+                {% if form.non_field_errors %}
+                <div class="list-error-message" role="alert">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <div style="margin-top: 20px;">
+                    <button type="submit" class="list-primary-button">
+                        🔍 検索する
+                    </button>
+                </div>
+            </form>
+
+            <p class="list-search-hint">
+                商品名や受取店舗から予約可能な商品を探せます。
+            </p>
+        </div>
+
+        <!-- お買い得商品の予算検索 -->
+        <div id="budgetSearchArea" hidden>
+            <div class="list-panel-heading">
+                <span aria-hidden="true">💰</span>
+                <h2>予算から商品を探す</h2>
+            </div>
+
+            <p class="list-budget-description">
+                ご希望の予算を入力すると、
+                その金額以内の商品を探せます。
+            </p>
+
+            <label class="list-input-label" for="budgetInput">
+                ご希望の予算
+            </label>
+
+            <div class="list-budget-row">
+                <div class="list-budget-input-wrap">
+                    <input
+                        type="number"
+                        id="budgetInput"
+                        placeholder="例：500"
+                        min="1"
+                        step="1"
+                        inputmode="numeric"
+                    >
+                    <span>円以内</span>
+                </div>
+
+                <button
+                    type="button"
+                    class="list-primary-button"
+                    id="budgetSearchButton">
+                    🔍 検索する
+                </button>
+            </div>
+
+            <p class="list-search-hint">
+                ※ 現在読み込まれている商品の中から検索します。
+            </p>
+
+            <p id="budgetError"
+               class="list-error-message"
+               role="alert"
+               hidden></p>
+        </div>
+
+    </section>
+
+    <!-- 商品一覧：最初から表示する -->
+    <section class="list-results"
+             id="listResults"
+             aria-labelledby="resultHeading">
+
+        <div class="list-results-heading">
+            <div>
+                <span class="list-kicker">PRODUCT COLLECTION</span>
+
+                <h2 id="resultHeading">商品一覧</h2>
+
+                <p id="resultDescription">
+                    現在予約できる商品を表示しています。
+                </p>
+            </div>
+
+            <span class="list-result-count" id="resultCount">
+                {{ page.paginator.count }}件の商品
+            </span>
+        </div>
+
+        {% if page.object_list %}
+
+        <div class="list-product-grid" id="productGrid">
+
+            {% for lot in page.object_list %}
+
+            <article class="list-product-card"
+                     data-price="{{ lot.sale_price }}">
+
+                <!-- 商品画像 -->
+                <div class="list-product-photo">
+                    {% if lot.product.image_url %}
+                    <img
+                        src="{{ lot.product.image_url }}"
+                        alt="{{ lot.product.name }}"
+                        loading="lazy"
+                    >
+                    {% else %}
+                    <div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:60px;background:#e8f4ed;"
+                         aria-label="商品画像なし">
+                        🛍️
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- 商品情報 -->
+                <div class="list-product-body">
+
+                    <span class="list-product-category">
+                        🛍️ 商品
+                    </span>
+
+                    <h3 class="list-product-name">
+                        {{ lot.product.name }}
+                    </h3>
+
+                    <p class="list-product-store">
+                        🏪 {{ lot.branch.chain.name }}・{{ lot.branch.name }}
+                    </p>
+
+                    <p style="font-size:13px;color:#718078;line-height:1.7;margin-bottom:15px;">
+                        {{ lot.product.description|default:"商品説明は準備中です。"|truncatechars:80 }}
+                    </p>
+
+                    <span class="list-expiry-label">
+                        ⏰ 予約締切：
+                        {{ lot.reserve_end|date:"m/d H:i" }}
+                    </span>
+
+                    <div class="list-price-row">
+                        <span class="list-original-price">
+                            {{ lot.original_price|floatformat:0 }}
+                            {{ MARKET_CURRENCY }}
+                        </span>
+
+                        <span class="list-sale-price">
+                            {{ lot.sale_price|floatformat:0 }}
+                            <small>{{ MARKET_CURRENCY }}</small>
+                        </span>
+                    </div>
+
+                    <div class="list-stock-info">
+                        <p class="list-available">
+                            予約可能数：
+                            {{ lot.available_quantity }}個
+                        </p>
+
+                        <p>
+                            予約締切：
+                            {{ lot.reserve_end|date:"m/d H:i" }}
+                        </p>
+                    </div>
+
+                    <div class="list-card-footer">
+                        <span class="list-pickup">
+                            店頭受け取り
+                        </span>
+
+                        <a href="{% url 'market:lot_detail' lot.pk %}"
+                           class="list-detail-button">
+                            詳細を見る →
+                        </a>
+                    </div>
+                </div>
+            </article>
+
+            {% endfor %}
+        </div>
+
+        {% include 'market/pagination.html' with page=page %}
+
+        {% else %}
+
+        <div class="list-product-grid" id="productGrid"></div>
+
+        {% endif %}
+
+        <!-- 検索結果がない場合 -->
+        <div class="list-empty-state"
+             id="emptyMessage"
+             {% if page.object_list %}hidden{% endif %}>
+            <div class="list-empty-icon">🔎</div>
+            <h3>条件に合う商品がありません</h3>
+            <p>検索条件を変更して、もう一度お試しください。</p>
+        </div>
+
+    </section>
+
+    <!-- トップに戻る -->
+    <div class="list-back-area">
+        <a href="{% url 'products:top' %}"
+           class="list-back-button">
+            ← トップページに戻る
+        </a>
+    </div>
+
 </div>
-<form class="market-search" method="get" role="search">
-  <div>{{ form.q.label_tag }}{{ form.q }}{{ form.q.errors }}</div>
-  <div>{{ form.branch.label_tag }}{{ form.branch }}{{ form.branch.errors }}</div>
-  <button type="submit">検索</button>
-</form>
-{% include 'market/partials/lot_results.html' with page=page %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script defer src="{% static 'js/list.js' %}"></script>
 {% endblock %}

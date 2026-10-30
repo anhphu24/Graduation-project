@@ -1,0 +1,714 @@
+
+/* ========================================
+   商品一覧画面
+   ======================================== */
+
+:root {
+    --list-green: #145c49;
+    --list-green-dark: #104938;
+    --list-green-light: #e8f4ed;
+    --list-background: #f7faf7;
+    --list-white: #ffffff;
+    --list-text: #243b32;
+    --list-muted: #718078;
+    --list-coral: #d66a56;
+    --list-border: #e2ebe5;
+    --list-shadow: 0 8px 28px rgba(24, 70, 49, 0.07);
+}
+
+body {
+    background: var(--list-background);
+    color: var(--list-text);
+}
+
+/* Header */
+
+.list-header {
+    width: 100%;
+    min-height: 76px;
+    padding: 16px max(24px, calc((100% - 1120px) / 2));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    background: white;
+    border-bottom: 1px solid var(--list-border);
+}
+
+.list-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--list-green);
+    text-decoration: none;
+    font-size: 19px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.list-logo-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 13px;
+    background: var(--list-green-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+}
+
+.list-logo small {
+    display: block;
+    margin-top: 3px;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--list-muted);
+}
+
+/* Main */
+
+.list-main {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 32px 24px 72px;
+}
+
+/* Breadcrumb */
+
+.list-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 25px;
+    font-size: 13px;
+    color: var(--list-muted);
+}
+
+.list-breadcrumb a {
+    color: var(--list-green);
+    text-decoration: none;
+}
+
+.list-breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+/* Hero */
+
+.list-hero {
+    position: relative;
+    overflow: hidden;
+    min-height: 200px;
+    padding: 45px 50px;
+    border-radius: 24px;
+    background: linear-gradient(
+        115deg,
+        #165d4a 0%,
+        #26745b 65%,
+        #397e63 100%
+    );
+    color: white;
+}
+
+.list-kicker {
+    display: inline-block;
+    margin-bottom: 12px;
+    color: #d6b28a;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.8px;
+}
+
+.list-hero h1 {
+    position: relative;
+    z-index: 1;
+    margin: 0 0 15px;
+    font-size: clamp(25px, 3vw, 36px);
+    line-height: 1.4;
+    font-weight: 800;
+}
+
+.list-hero p {
+    position: relative;
+    z-index: 1;
+    max-width: 580px;
+    margin: 0;
+    color: #e4f0e9;
+    font-size: 14px;
+    line-height: 1.9;
+}
+
+.list-hero-decoration {
+    position: absolute;
+    right: 45px;
+    bottom: 35px;
+    font-size: 54px;
+    opacity: 0.75;
+    transform: rotate(-8deg);
+}
+
+/* Search Panel */
+
+.list-search-panel {
+    margin-top: 28px;
+    padding: 32px;
+    border-radius: 20px;
+    background: var(--list-white);
+    border: 1px solid var(--list-border);
+    box-shadow: var(--list-shadow);
+}
+
+.list-panel-heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 22px;
+}
+
+.list-panel-heading span {
+    font-size: 23px;
+}
+
+.list-panel-heading h2 {
+    margin: 0;
+    font-size: 21px;
+    color: var(--list-text);
+}
+
+/* Keyword Search */
+
+.list-search-row {
+    display: flex;
+    gap: 12px;
+}
+
+.list-search-row input {
+    flex: 1;
+    min-width: 0;
+    height: 50px;
+    padding: 0 18px;
+    border: 1px solid #d7e5dc;
+    border-radius: 12px;
+    background: #fbfdfb;
+    color: var(--list-text);
+    font-size: 15px;
+}
+
+.list-search-row input:focus,
+.list-budget-input-wrap input:focus {
+    outline: 2px solid #85bba2;
+    outline-offset: 1px;
+}
+
+/* Buttons */
+
+.list-primary-button {
+    min-height: 50px;
+    padding: 0 26px;
+    border: none;
+    border-radius: 12px;
+    background: var(--list-green);
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.list-primary-button:hover {
+    background: var(--list-green-dark);
+    transform: translateY(-1px);
+}
+
+.list-search-hint {
+    margin: 14px 0 0;
+    font-size: 12px;
+    color: var(--list-muted);
+}
+
+/* Budget Search */
+
+.list-budget-description {
+    margin: 0 0 24px;
+    color: var(--list-muted);
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+.list-input-label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.list-budget-row {
+    display: flex;
+    gap: 14px;
+    align-items: stretch;
+}
+
+.list-budget-input-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 52px;
+    padding: 0 18px;
+    border: 1px solid #d7e5dc;
+    border-radius: 12px;
+    background: #fbfdfb;
+}
+
+.list-budget-input-wrap input {
+    width: 100%;
+    min-width: 0;
+    height: 45px;
+    border: none;
+    background: transparent;
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--list-green);
+}
+
+.list-budget-input-wrap input:focus {
+    outline: none;
+}
+
+.list-budget-input-wrap span {
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--list-muted);
+}
+
+.list-error-message {
+    margin-top: 14px;
+    color: #c04444;
+    font-size: 13px;
+}
+
+/* Results */
+
+.list-results {
+    margin-top: 45px;
+}
+
+.list-results-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.list-results-heading h2 {
+    margin: 0 0 8px;
+    font-size: 25px;
+}
+
+.list-results-heading p {
+    margin: 0;
+    color: var(--list-muted);
+    font-size: 13px;
+}
+
+.list-result-count {
+    padding: 9px 16px;
+    border-radius: 30px;
+    background: var(--list-green-light);
+    color: var(--list-green);
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* Product Grid */
+
+.list-product-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+}
+
+/* Product Card */
+
+.list-product-card {
+    overflow: hidden;
+    border-radius: 18px;
+    background: white;
+    border: 1px solid var(--list-border);
+    box-shadow: var(--list-shadow);
+    transition: 0.25s ease;
+}
+
+.list-product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 35px rgba(24, 70, 49, 0.13);
+}
+
+.list-product-photo {
+    position: relative;
+    height: 205px;
+    overflow: hidden;
+    background: #e8efe8;
+}
+
+.list-product-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.list-discount {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    padding: 7px 11px;
+    border-radius: 7px;
+    background: var(--list-coral);
+    color: white;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.list-product-body {
+    padding: 20px;
+}
+
+.list-product-category {
+    display: inline-block;
+    margin-bottom: 10px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    background: #edf6ef;
+    color: #367558;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.list-product-name {
+    margin: 0 0 8px;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.list-product-store {
+    margin: 0 0 15px;
+    color: var(--list-muted);
+    font-size: 12px;
+}
+
+.list-expiry-label {
+    display: inline-block;
+    margin-bottom: 14px;
+    padding: 6px 10px;
+    border-radius: 7px;
+    background: #fff3e8;
+    color: #bc7040;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.list-price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.list-original-price {
+    color: #a0aaa3;
+    font-size: 13px;
+    text-decoration: line-through;
+}
+
+.list-sale-price {
+    color: var(--list-coral);
+    font-size: 27px;
+    font-weight: 800;
+}
+
+.list-sale-price small {
+    margin-left: 2px;
+    font-size: 14px;
+}
+
+.list-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-top: 15px;
+    border-top: 1px solid var(--list-border);
+}
+
+.list-pickup {
+    font-size: 11px;
+    color: var(--list-muted);
+}
+
+.list-detail-button {
+    display: inline-block;
+    padding: 10px 15px;
+    border-radius: 8px;
+    background: var(--list-green);
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.list-detail-button:hover {
+    background: var(--list-green-dark);
+}
+
+/* ===== 在庫数・予約数・予約可能数 ===== */
+
+.list-stock-info {
+    display: grid;
+    gap: 6px;
+    margin: 0 0 16px;
+    padding: 12px 14px;
+    border: 1px solid #dcebdd;
+    border-radius: 10px;
+    background: #f5faf5;
+}
+
+.list-stock-info p {
+    margin: 0;
+    color: #4c6256;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.list-stock-info .list-available {
+    color: #17714e;
+    font-weight: 800;
+}
+
+/* Empty State */
+
+.list-empty-state {
+    padding: 65px 24px;
+    border-radius: 20px;
+    border: 1px dashed #c9ded0;
+    background: white;
+    text-align: center;
+}
+
+.list-empty-icon {
+    margin-bottom: 15px;
+    font-size: 44px;
+}
+
+.list-empty-state h3 {
+    margin: 0 0 12px;
+    font-size: 20px;
+}
+
+.list-empty-state p {
+    margin: 0;
+    color: var(--list-muted);
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+.list-demo-note {
+    margin-top: 24px;
+    font-size: 11px;
+    color: #89958d;
+    line-height: 1.8;
+}
+
+/* Back Button */
+
+.list-back-area {
+    margin-top: 55px;
+    text-align: center;
+}
+
+.list-back-button {
+    display: inline-block;
+    padding: 14px 25px;
+    border: 1px solid #c8ddd0;
+    border-radius: 12px;
+    background: white;
+    color: var(--list-green);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.list-back-button:hover {
+    background: var(--list-green-light);
+}
+
+/* Footer */
+
+.list-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 25px max(24px, calc((100% - 1120px) / 2));
+    border-top: 1px solid var(--list-border);
+    background: white;
+    color: var(--list-muted);
+    font-size: 12px;
+}
+
+/* Hidden */
+
+[hidden] {
+    display: none !important;
+}
+
+/* Responsive */
+
+@media (max-width: 900px) {
+    .list-product-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .list-hero-decoration {
+        font-size: 35px;
+    }
+}
+
+@media (max-width: 600px) {
+
+    .list-header {
+        padding: 14px 18px;
+        flex-wrap: wrap;
+    }
+
+    .list-main {
+        padding: 22px 16px 50px;
+    }
+
+    .list-hero {
+        padding: 35px 25px;
+        min-height: 190px;
+    }
+
+    .list-hero-decoration {
+        right: 15px;
+        bottom: 15px;
+        font-size: 27px;
+        opacity: 0.4;
+    }
+
+    .list-search-panel {
+        padding: 22px 18px;
+    }
+
+    .list-search-row,
+    .list-budget-row {
+        flex-direction: column;
+    }
+
+    .list-product-grid {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .list-results-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .list-product-photo {
+        height: 220px;
+    }
+
+    .list-footer {
+        flex-direction: column;
+        text-align: center;
+        padding: 22px;
+    }
+}
+
+/* ========================================
+   Django Backend連携用 追加スタイル
+   ======================================== */
+
+/* 商品名検索・店舗選択 */
+.list-search-row > div {
+    flex: 1;
+    min-width: 0;
+}
+
+.list-search-row input,
+.list-search-row select {
+    display: block;
+    width: 100%;
+    height: 50px;
+    padding: 0 16px;
+    border: 1px solid #d7e5dc;
+    border-radius: 12px;
+    background: #fbfdfb;
+    color: var(--list-text);
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.list-search-row input:focus,
+.list-search-row select:focus {
+    outline: 2px solid #85bba2;
+    outline-offset: 1px;
+    border-color: #85bba2;
+}
+
+/* Django Formエラー */
+.list-search-panel .errorlist {
+    margin: 8px 0 0;
+    padding-left: 18px;
+    color: #c04444;
+    font-size: 12px;
+}
+
+/* 商品カードの高さを統一 */
+.list-product-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.list-product-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.list-card-footer {
+    margin-top: auto;
+}
+
+/* 長い商品名・店舗名への対応 */
+.list-product-name,
+.list-product-store {
+    overflow-wrap: anywhere;
+}
+
+/* 商品がない場合 */
+.list-product-grid:empty {
+    display: none;
+}
+
+/* スマートフォン対応 */
+@media (max-width: 600px) {
+    .list-search-row > div {
+        width: 100%;
+    }
+
+    .list-search-row input,
+    .list-search-row select {
+        width: 100%;
+    }
+
+    .list-primary-button {
+        max-width: 100%;
+    }
+}
+

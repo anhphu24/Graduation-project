@@ -104,8 +104,10 @@
   </div>
 
   <div class="fr-list-action">
-    <a href="{% url 'products:list' %}">商品一覧を見る <span aria-hidden="true">→</span></a>
-  </div>
+    <a href="{% url 'products:list' %}?type=near_expiry">
+        消費期限間近の商品を見る <span aria-hidden="true">→</span>
+    </a>
+</div>
   <p class="fr-prototype-note">※ 価格・割引率・商品・店舗名は画面確認用のサンプルです。実際の在庫・期限・予約機能は未実装です。</p>
 </section>
 
@@ -115,5 +117,7 @@
     <h2>まだおいしいを、おトクに。</h2>
     <p>お買い得商品をチェックして、食品ロス削減に参加しましょう。</p>
   </div>
-  <a href="{% url 'products:list' %}">お買い得商品を見る →</a>
+  <a href="{% url 'products:list' %}?type=bargain">
+    お買い得商品を見る →
+</a>
 </section>
