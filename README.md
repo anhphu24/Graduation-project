@@ -1,5 +1,7 @@
 # Food Rescue — 食品ロス削減システム
 
+> CI/CD の構成、AWS SSM + GitHub OIDC、production rollback の手順は [`ops/DEPLOYMENT.md`](ops/DEPLOYMENT.md) を参照してください。`DEPLOY_ENABLED` を有効にするまでは production deploy は実行されません。
+
 > **現在の状態：Market MVP は Django モノリスとして実装済みです。**
 > ロットの一覧・詳細、予約・キャンセル、ロット作成、入金確認、注文の期限切れ処理、Membership による権限管理は settings／URL に接続されています。
 > 業務モデルと migration は作成済みです。ローカルデータベースで使用する前に `python manage.py migrate` を実行してください。SQLite の結果を、本番環境における同時実行安全性の根拠として扱わないでください。
