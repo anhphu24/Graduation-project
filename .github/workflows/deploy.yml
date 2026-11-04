@@ -97,10 +97,10 @@ jobs:
         run: bash tooling/scripts/run_ci.sh --project-root tooling --deployment-only
 
   deploy:
-    name: Deploy through AWS Systems Manager
+    name: Deploy through SSH
     needs:
-      - test
       - resolve-target
+      - test
     if: >-
       needs.resolve-target.result == 'success' &&
       needs.test.result == 'success' &&
@@ -112,22 +112,19 @@ jobs:
       url: ${{ vars.PRODUCTION_HEALTHCHECK_URL }}
     permissions:
       contents: read
-      id-token: write
     env:
-      AWS_REGION: ${{ vars.AWS_REGION }}
-      AWS_ROLE_TO_ASSUME: ${{ vars.AWS_ROLE_TO_ASSUME }}
-      DEPLOY_ENABLED: ${{ vars.DEPLOY_ENABLED }}
-      EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
-      EC2_APP_USER: ubuntu
-      EC2_APP_DIR: /var/www/food-rescue
-      SSM_DOCUMENT_NAME: FoodRescueDeploy
-      PRODUCTION_HEALTHCHECK_URL: ${{ vars.PRODUCTION_HEALTHCHECK_URL }}
-      PRODUCTION_ROLLBACK_HEALTHCHECK_URL: ${{ vars.PRODUCTION_ROLLBACK_HEALTHCHECK_URL }}
+      DEPLOY_HOST: ${{ vars.EC2_SSH_HOST }}
+      DEPLOY_SSH_PORT: ${{ vars.EC2_SSH_PORT || '22' }}
+      DEPLOY_USER: ubuntu
+      SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+      SSH_KNOWN_HOSTS: ${{ secrets.EC2_SSH_KNOWN_HOSTS }}
       TARGET_SHA: ${{ needs.resolve-target.outputs.sha }}
       MAIN_SHA: ${{ needs.resolve-target.outputs.main_sha }}
       DEPLOY_MODE: ${{ needs.resolve-target.outputs.mode }}
+      PRODUCTION_HEALTHCHECK_URL: ${{ vars.PRODUCTION_HEALTHCHECK_URL }}
+      PRODUCTION_ROLLBACK_HEALTHCHECK_URL: ${{ vars.PRODUCTION_ROLLBACK_HEALTHCHECK_URL }}
     steps:
-      - name: Check out deployment tooling from main
+      - name: Check out reviewed deployment tooling
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           ref: ${{ needs.resolve-target.outputs.main_sha }}
@@ -135,48 +132,27 @@ jobs:
 
       - name: Validate deployment configuration
         shell: bash
+        env:
+          DEPLOY_ENABLED: ${{ vars.DEPLOY_ENABLED }}
         run: |
           set -euo pipefail
-          [[ "${DEPLOY_ENABLED:-}" == "true" ]] || {
-            echo "Deployment gate is not enabled." >&2
-            exit 1
-          }
-          for name in AWS_REGION AWS_ROLE_TO_ASSUME EC2_INSTANCE_ID SSM_DOCUMENT_NAME PRODUCTION_HEALTHCHECK_URL; do
-            [[ -n "${!name:-}" ]] || {
-              echo "Missing GitHub Actions variable: $name" >&2
-              exit 1
-            }
+          [[ "$DEPLOY_ENABLED" == "true" ]] || exit 1
+          for name in DEPLOY_HOST SSH_PRIVATE_KEY SSH_KNOWN_HOSTS PRODUCTION_HEALTHCHECK_URL; do
+            [[ -n "${!name:-}" ]] || { echo "Missing variable or secret: $name" >&2; exit 1; }
           done
-          if [[ "$DEPLOY_MODE" == "rollback" && -z "${PRODUCTION_ROLLBACK_HEALTHCHECK_URL:-}" ]]; then
-            echo "Missing GitHub Actions variable: PRODUCTION_ROLLBACK_HEALTHCHECK_URL" >&2
+          if [[ "$DEPLOY_MODE" == "rollback" && -z "$PRODUCTION_ROLLBACK_HEALTHCHECK_URL" ]]; then
+            echo "Missing PRODUCTION_ROLLBACK_HEALTHCHECK_URL" >&2
             exit 1
           fi
 
-      - name: Authenticate to AWS with GitHub OIDC
-        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
-        with:
-          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
-          aws-region: ${{ env.AWS_REGION }}
-          role-session-name: food-rescue-${{ github.run_id }}
-          role-duration-seconds: 3600
-          mask-aws-account-id: true
-          unset-current-credentials: true
-
-      - name: Deploy exact commit through SSM Run Command
+      - name: Deploy exact validated SHA over SSH
         shell: bash
-        run: |
-          bash scripts/ssm_deploy.sh \
-            --instance-id "$EC2_INSTANCE_ID" \
-            --document-name "$SSM_DOCUMENT_NAME" \
-            --app-user "$EC2_APP_USER" \
-            --app-dir "$EC2_APP_DIR" \
-            --expected-sha "$TARGET_SHA" \
-            --expected-main-sha "$MAIN_SHA" \
-            --mode "$DEPLOY_MODE"
+        run: bash scripts/ssh_deploy.sh
 
       - name: Verify public health endpoint
         shell: bash
         run: |
+          set -euo pipefail
           healthcheck_url="$PRODUCTION_HEALTHCHECK_URL"
           if [[ "$DEPLOY_MODE" == "rollback" ]]; then
             healthcheck_url="$PRODUCTION_ROLLBACK_HEALTHCHECK_URL"
