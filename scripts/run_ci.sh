@@ -27,14 +27,9 @@ fi
 
 if [[ "$MODE" == "all" || "$MODE" == "deployment" ]]; then
     bash -n "$PROJECT_ROOT/scripts/deploy_ec2.sh"
-    bash -n "$PROJECT_ROOT/scripts/ssm_deploy.sh"
+    bash -n "$PROJECT_ROOT/scripts/ssh_deploy.sh"
     bash -n "$PROJECT_ROOT/scripts/resolve_deploy_target.sh"
     bash -n "$PROJECT_ROOT/scripts/tests/test_resolve_deploy_target.sh"
-    bash -n "$PROJECT_ROOT/scripts/tests/test_ssm_deploy.sh"
-    python -m json.tool "$PROJECT_ROOT/ops/aws/github-oidc-trust-policy.json" >/dev/null
-    python -m json.tool "$PROJECT_ROOT/ops/aws/github-actions-ssm-policy.json" >/dev/null
-    python -m json.tool "$PROJECT_ROOT/ops/aws/food-rescue-deploy-document.json" >/dev/null
-    python "$PROJECT_ROOT/scripts/tests/test_security_templates.py" "$PROJECT_ROOT"
     bash "$PROJECT_ROOT/scripts/tests/test_resolve_deploy_target.sh" "$PROJECT_ROOT"
-    bash "$PROJECT_ROOT/scripts/tests/test_ssm_deploy.sh" "$PROJECT_ROOT"
+    python "$PROJECT_ROOT/scripts/tests/test_ssh_security.py" "$PROJECT_ROOT"
 fi
