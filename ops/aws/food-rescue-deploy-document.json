@@ -1,0 +1,89 @@
+{
+  "schemaVersion": "2.2",
+  "description": "Deploy or roll back one validated Food Rescue commit from origin/main.",
+  "parameters": {
+    "ExpectedSha": {
+      "type": "String",
+      "description": "Full commit SHA selected by the reviewed GitHub Actions workflow.",
+      "interpolationType": "ENV_VAR",
+      "allowedPattern": "^[0-9a-f]{40}$"
+    },
+    "ExpectedMainSha": {
+      "type": "String",
+      "description": "Exact origin/main SHA whose tooling passed the workflow checks.",
+      "interpolationType": "ENV_VAR",
+      "allowedPattern": "^[0-9a-f]{40}$"
+    },
+    "DeployMode": {
+      "type": "String",
+      "description": "Deploy current main or roll back to an ancestor of main.",
+      "interpolationType": "ENV_VAR",
+      "allowedValues": [
+        "deploy",
+        "rollback"
+      ]
+    },
+    "AppUser": {
+      "type": "String",
+      "description": "Unprivileged owner of the repository and virtual environment.",
+      "default": "ubuntu",
+      "interpolationType": "ENV_VAR",
+      "allowedValues": [
+        "ubuntu"
+      ]
+    },
+    "AppDir": {
+      "type": "String",
+      "description": "Absolute application directory on the managed instance.",
+      "default": "/var/www/food-rescue",
+      "interpolationType": "ENV_VAR",
+      "allowedValues": [
+        "/var/www/food-rescue"
+      ]
+    }
+  },
+  "mainSteps": [
+    {
+      "action": "aws:runShellScript",
+      "name": "deployFoodRescue",
+      "precondition": {
+        "StringEquals": [
+          "platformType",
+          "Linux"
+        ]
+      },
+      "inputs": {
+        "timeoutSeconds": "1800",
+        "runCommand": [
+          "set -euo pipefail",
+          "if [ -z \"${SSM_ExpectedSha+x}\" ]; then export SSM_ExpectedSha=\"{{ExpectedSha}}\"; fi",
+          "if [ -z \"${SSM_ExpectedMainSha+x}\" ]; then export SSM_ExpectedMainSha=\"{{ExpectedMainSha}}\"; fi",
+          "if [ -z \"${SSM_DeployMode+x}\" ]; then export SSM_DeployMode=\"{{DeployMode}}\"; fi",
+          "if [ -z \"${SSM_AppUser+x}\" ]; then export SSM_AppUser=\"{{AppUser}}\"; fi",
+          "if [ -z \"${SSM_AppDir+x}\" ]; then export SSM_AppDir=\"{{AppDir}}\"; fi",
+          "[[ \"$(id -u)\" -eq 0 ]] || { echo 'SSM command must run as root.' >&2; exit 20; }",
+          "[[ \"$SSM_ExpectedSha\" =~ ^[0-9a-f]{40}$ ]] || { echo 'Invalid expected SHA.' >&2; exit 20; }",
+          "[[ \"$SSM_ExpectedMainSha\" =~ ^[0-9a-f]{40}$ ]] || { echo 'Invalid expected main SHA.' >&2; exit 20; }",
+          "[[ \"$SSM_DeployMode\" == 'deploy' || \"$SSM_DeployMode\" == 'rollback' ]] || { echo 'Invalid deploy mode.' >&2; exit 20; }",
+          "[[ \"$SSM_AppUser\" =~ ^[a-z_][a-z0-9_-]*$ ]] || { echo 'Invalid app user.' >&2; exit 20; }",
+          "[[ \"$SSM_AppDir\" =~ ^/[A-Za-z0-9._/-]+$ ]] || { echo 'Invalid app directory.' >&2; exit 20; }",
+          "id \"$SSM_AppUser\" >/dev/null",
+          "test -d \"$SSM_AppDir/.git\"",
+          "APP_HOME=\"$(getent passwd \"$SSM_AppUser\" | cut -d: -f6)\"",
+          "git_as_app() { runuser -u \"$SSM_AppUser\" -- env HOME=\"$APP_HOME\" git -C \"$SSM_AppDir\" \"$@\"; }",
+          "[[ -z \"$(git_as_app status --porcelain --untracked-files=all)\" ]] || { echo 'EC2 working tree is not clean.' >&2; exit 21; }",
+          "git_as_app fetch --no-tags origin main",
+          "origin_main=\"$(git_as_app rev-parse refs/remotes/origin/main^{commit})\"",
+          "[[ \"$origin_main\" == \"$SSM_ExpectedMainSha\" ]] || { echo 'origin/main changed after workflow validation.' >&2; exit 22; }",
+          "git_as_app cat-file -e \"${SSM_ExpectedSha}^{commit}\"",
+          "if [[ \"$SSM_DeployMode\" == 'deploy' ]]; then [[ \"$SSM_ExpectedSha\" == \"$origin_main\" ]] || { echo 'Expected SHA does not match origin/main.' >&2; exit 22; }; else git_as_app merge-base --is-ancestor \"$SSM_ExpectedSha\" \"$origin_main\" || { echo 'Rollback target is not in origin/main history.' >&2; exit 23; }; fi",
+          "deployment_script=\"$(mktemp /tmp/food-rescue-deploy.XXXXXX)\"",
+          "trap 'rm -f \"$deployment_script\"' EXIT",
+          "git_as_app show \"${SSM_ExpectedMainSha}:scripts/deploy_ec2.sh\" > \"$deployment_script\"",
+          "chmod 0700 \"$deployment_script\"",
+          "EXPECTED_SHA=\"$SSM_ExpectedSha\" EXPECTED_MAIN_SHA=\"$SSM_ExpectedMainSha\" DEPLOY_MODE=\"$SSM_DeployMode\" APP_DIR=\"$SSM_AppDir\" APP_USER=\"$SSM_AppUser\" bash \"$deployment_script\""
+        ]
+      }
+    }
+  ]
+}
