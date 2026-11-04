@@ -49,7 +49,7 @@ remote_ssh() {
         -o ForwardAgent=no -o ClearAllForwardings=yes \
         -i "$secret_dir/id_ed25519" \
         -p "$DEPLOY_SSH_PORT" \
-        "$DEPLOY_USER$@DEPLOY_HOST" "$@"
+        "${DEPLOY_USER}@${DEPLOY_HOST}" "$@"
 }
 
 echo "Checking SSH connectivity and non-interactive sudo..."
