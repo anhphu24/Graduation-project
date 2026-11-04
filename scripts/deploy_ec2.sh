@@ -2,6 +2,7 @@
 set -Eeuo pipefail
 
 EXPECTED_SHA="${EXPECTED_SHA:-}"
+EXPECTED_MAIN_SHA="${EXPECTED_MAIN_SHA:-}"
 DEPLOY_MODE="${DEPLOY_MODE:-deploy}"
 APP_DIR="${APP_DIR:-/var/www/food-rescue}"
 APP_USER="${APP_USER:-ubuntu}"
@@ -12,6 +13,7 @@ BACKUP_DIR="${BACKUP_DIR:-/var/backups/food-rescue}"
 
 [[ "$(id -u)" -eq 0 ]] || { echo "Deployment script must run as root." >&2; exit 10; }
 [[ "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "EXPECTED_SHA must be a full commit SHA." >&2; exit 11; }
+[[ "$EXPECTED_MAIN_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "EXPECTED_MAIN_SHA must be a full commit SHA." >&2; exit 11; }
 [[ "$DEPLOY_MODE" == "deploy" || "$DEPLOY_MODE" == "rollback" ]] || { echo "DEPLOY_MODE must be deploy or rollback." >&2; exit 11; }
 [[ "$APP_DIR" =~ ^/[A-Za-z0-9._/-]+$ ]] || { echo "Invalid APP_DIR." >&2; exit 11; }
 [[ "$SERVICE_NAME" =~ ^[A-Za-z0-9@._-]+$ ]] || { echo "Invalid SERVICE_NAME." >&2; exit 11; }
@@ -59,31 +61,62 @@ DATABASE_MODE=""
 
 restore_previous_release() {
     local original_exit="$1"
+    local rollback_failed=0
     trap - ERR
+
+    if [[ "$CODE_SWITCHED" -eq 0 && "$SERVICE_STOPPED" -eq 0 ]]; then
+        echo "Deployment stopped before production state was changed." >&2
+        exit "$original_exit"
+    fi
+
     echo "Deployment failed; restoring the previous code release." >&2
 
     if [[ "$CODE_SWITCHED" -eq 1 ]]; then
-        git_as_app switch --detach "$PREVIOUS_SHA" || true
+        if ! git_as_app switch --detach "$PREVIOUS_SHA"; then
+            echo "Rollback failed to restore the previous Git commit." >&2
+            rollback_failed=1
+        fi
         if [[ -f "$APP_DIR/requirements.txt" ]]; then
-            as_app "$VENV_DIR/bin/python" -m pip install \
-                --disable-pip-version-check -r "$APP_DIR/requirements.txt" || true
+            if ! as_app "$VENV_DIR/bin/python" -m pip install \
+                --disable-pip-version-check -r "$APP_DIR/requirements.txt"; then
+                echo "Rollback failed to restore Python dependencies." >&2
+                rollback_failed=1
+            fi
         fi
         if [[ "$PRODUCTION_ENV_LOADED" -eq 1 ]]; then
-            django_manage collectstatic --noinput || true
+            if ! django_manage collectstatic --noinput; then
+                echo "Rollback failed to restore static files." >&2
+                rollback_failed=1
+            fi
         fi
     fi
 
     if [[ "$SERVICE_STOPPED" -eq 1 && "$SERVICE_RESTARTED" -eq 0 && -n "$DATABASE_BACKUP" ]]; then
-        install -o "$DATABASE_UID" -g "$DATABASE_GID" -m "$DATABASE_MODE" \
-            "$DATABASE_BACKUP" "$DATABASE_PATH" || true
-        echo "SQLite database restored because the service was never restarted." >&2
+        if install -o "$DATABASE_UID" -g "$DATABASE_GID" -m "$DATABASE_MODE" \
+            "$DATABASE_BACKUP" "$DATABASE_PATH"; then
+            echo "SQLite database restored because the service was never restarted." >&2
+        else
+            echo "Rollback failed to restore the SQLite backup." >&2
+            rollback_failed=1
+        fi
     elif [[ "$MIGRATIONS_STARTED" -eq 1 && -n "$DATABASE_BACKUP" ]]; then
-        echo "SQLite backup retained at $DATABASE_BACKUP; it was not restored automatically after restart." >&2
+        echo "SQLite backup retained at $DATABASE_BACKUP; database rollback requires manual review after service restart." >&2
+        rollback_failed=1
     fi
 
     if [[ "$SERVICE_STOPPED" -eq 1 || "$SERVICE_RESTARTED" -eq 1 ]]; then
-        systemctl restart "$SERVICE_NAME" || true
+        if ! systemctl restart "$SERVICE_NAME" || ! systemctl is-active --quiet "$SERVICE_NAME"; then
+            echo "Rollback failed to return $SERVICE_NAME to an active state." >&2
+            rollback_failed=1
+        fi
     fi
+
+    if [[ "$rollback_failed" -ne 0 ]]; then
+        echo "Automatic rollback is incomplete; manual recovery is required." >&2
+        exit 40
+    fi
+
+    echo "Previous release restored after deployment failure." >&2
     exit "$original_exit"
 }
 
@@ -96,6 +129,10 @@ trap 'restore_previous_release $?' ERR
 
 git_as_app fetch --no-tags origin main
 ORIGIN_MAIN="$(git_as_app rev-parse refs/remotes/origin/main)"
+[[ "$ORIGIN_MAIN" == "$EXPECTED_MAIN_SHA" ]] || {
+    echo "origin/main changed after workflow validation." >&2
+    exit 21
+}
 
 if [[ "$DEPLOY_MODE" == "deploy" ]]; then
     [[ "$EXPECTED_SHA" == "$ORIGIN_MAIN" ]] || {
@@ -120,6 +157,7 @@ as_app "$VENV_DIR/bin/python" -m pip install \
 # Export production values only to child processes. Deployment control values
 # are restored immediately so /etc/food-rescue.env cannot change the target.
 readonly deploy_expected_sha="$EXPECTED_SHA"
+readonly deploy_expected_main_sha="$EXPECTED_MAIN_SHA"
 readonly deploy_mode="$DEPLOY_MODE"
 readonly deploy_app_dir="$APP_DIR"
 readonly deploy_app_user="$APP_USER"
@@ -133,6 +171,7 @@ source "$ENV_FILE"
 set +a
 PRODUCTION_ENV_LOADED=1
 EXPECTED_SHA="$deploy_expected_sha"
+EXPECTED_MAIN_SHA="$deploy_expected_main_sha"
 DEPLOY_MODE="$deploy_mode"
 APP_DIR="$deploy_app_dir"
 APP_USER="$deploy_app_user"
@@ -141,7 +180,11 @@ ENV_FILE="$deploy_env_file"
 SERVICE_NAME="$deploy_service_name"
 BACKUP_DIR="$deploy_backup_dir"
 DATABASE_PATH="${DJANGO_DATABASE_PATH:-$APP_DIR/db.sqlite3}"
-HEALTHCHECK_URL="${DEPLOY_HEALTHCHECK_URL:-http://127.0.0.1/health/}"
+if [[ "$DEPLOY_MODE" == "rollback" ]]; then
+    HEALTHCHECK_URL="${DEPLOY_ROLLBACK_HEALTHCHECK_URL:-http://127.0.0.1/}"
+else
+    HEALTHCHECK_URL="${DEPLOY_HEALTHCHECK_URL:-http://127.0.0.1/health/}"
+fi
 
 django_manage check --deploy --fail-level WARNING
 
@@ -161,6 +204,9 @@ import sys
 source_path, backup_path = sys.argv[1:]
 with sqlite3.connect(source_path) as source, sqlite3.connect(backup_path) as backup:
     source.backup(backup)
+    integrity = backup.execute("PRAGMA integrity_check").fetchone()
+    if integrity != ("ok",):
+        raise RuntimeError(f"SQLite backup integrity check failed: {integrity!r}")
 PY
 chmod 0640 "$DATABASE_BACKUP"
 echo "SQLite backup created: $DATABASE_BACKUP"

@@ -27,47 +27,21 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  test:
-    name: Test production candidate
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    env:
-      DJANGO_SECRET_KEY: ci-only-secret-key-with-at-least-fifty-characters-123456789
-      DJANGO_DEBUG: "0"
-      DJANGO_ALLOWED_HOSTS: testserver,localhost,127.0.0.1
-    steps:
-      - name: Check out main
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          ref: main
-          fetch-depth: 0
-
-      - name: Set up Python
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
-        with:
-          python-version: "3.13"
-          cache: pip
-
-      - name: Install dependencies
-        run: python -m pip install --disable-pip-version-check -r requirements.txt
-
-      - name: Run project checks and tests
-        run: bash scripts/run_ci.sh
-
   resolve-target:
     name: Resolve deployment SHA
-    needs: test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
       mode: ${{ steps.target.outputs.mode }}
       sha: ${{ steps.target.outputs.sha }}
+      main_sha: ${{ steps.target.outputs.main_sha }}
     steps:
       - name: Check out main history
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           ref: main
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Validate target against origin/main
         id: target
@@ -80,43 +54,58 @@ jobs:
         run: |
           set -euo pipefail
           git fetch --no-tags origin main
-          origin_main="$(git rev-parse origin/main)"
+          bash scripts/resolve_deploy_target.sh
 
-          if [[ "$EVENT_NAME" == "push" ]]; then
-            mode="deploy"
-            target="$PUSH_SHA"
-            [[ "$target" == "$origin_main" ]] || {
-              echo "Push SHA does not match origin/main." >&2
-              exit 1
-            }
-          elif [[ "$REQUESTED_MODE" == "rollback" ]]; then
-            mode="rollback"
-            target="$REQUESTED_SHA"
-            [[ "$target" =~ ^[0-9a-f]{40}$ ]] || {
-              echo "Rollback requires a full 40-character commit SHA." >&2
-              exit 1
-            }
-            git cat-file -e "${target}^{commit}"
-            git merge-base --is-ancestor "$target" "$origin_main" || {
-              echo "Rollback target is not in origin/main history." >&2
-              exit 1
-            }
-          else
-            mode="deploy"
-            target="$origin_main"
-          fi
+  test:
+    name: Test selected production candidate
+    needs: resolve-target
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      DJANGO_SECRET_KEY: ci-only-secret-key-with-at-least-fifty-characters-123456789
+      DJANGO_DEBUG: "0"
+      DJANGO_ALLOWED_HOSTS: testserver,localhost,127.0.0.1
+    steps:
+      - name: Check out selected candidate
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          ref: ${{ needs.resolve-target.outputs.sha }}
+          path: candidate
+          persist-credentials: false
 
-          echo "mode=$mode" >> "$GITHUB_OUTPUT"
-          echo "sha=$target" >> "$GITHUB_OUTPUT"
-          echo "Selected $mode target: $target"
+      - name: Check out reviewed deployment tooling
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          ref: ${{ needs.resolve-target.outputs.main_sha }}
+          path: tooling
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: candidate/requirements.txt
+
+      - name: Install candidate dependencies
+        run: python -m pip install --disable-pip-version-check -r candidate/requirements.txt
+
+      - name: Test the exact selected candidate
+        run: bash tooling/scripts/run_ci.sh --project-root candidate --django-only
+
+      - name: Test deployment tooling from main
+        run: bash tooling/scripts/run_ci.sh --project-root tooling --deployment-only
 
   deploy:
     name: Deploy through AWS Systems Manager
     needs:
       - test
       - resolve-target
-    if: vars.DEPLOY_ENABLED == 'true'
-    runs-on: ubuntu-latest
+    if: >-
+      needs.resolve-target.result == 'success' &&
+      needs.test.result == 'success' &&
+      vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
     environment:
       name: production
@@ -127,31 +116,44 @@ jobs:
     env:
       AWS_REGION: ${{ vars.AWS_REGION }}
       AWS_ROLE_TO_ASSUME: ${{ vars.AWS_ROLE_TO_ASSUME }}
+      DEPLOY_ENABLED: ${{ vars.DEPLOY_ENABLED }}
       EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
-      EC2_APP_USER: ${{ vars.EC2_APP_USER || 'ubuntu' }}
+      EC2_APP_USER: ubuntu
       EC2_APP_DIR: /var/www/food-rescue
+      SSM_DOCUMENT_NAME: FoodRescueDeploy
       PRODUCTION_HEALTHCHECK_URL: ${{ vars.PRODUCTION_HEALTHCHECK_URL }}
+      PRODUCTION_ROLLBACK_HEALTHCHECK_URL: ${{ vars.PRODUCTION_ROLLBACK_HEALTHCHECK_URL }}
       TARGET_SHA: ${{ needs.resolve-target.outputs.sha }}
+      MAIN_SHA: ${{ needs.resolve-target.outputs.main_sha }}
       DEPLOY_MODE: ${{ needs.resolve-target.outputs.mode }}
     steps:
       - name: Check out deployment tooling from main
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
-          ref: main
+          ref: ${{ needs.resolve-target.outputs.main_sha }}
+          persist-credentials: false
 
       - name: Validate deployment configuration
         shell: bash
         run: |
           set -euo pipefail
-          for name in AWS_REGION AWS_ROLE_TO_ASSUME EC2_INSTANCE_ID PRODUCTION_HEALTHCHECK_URL; do
+          [[ "${DEPLOY_ENABLED:-}" == "true" ]] || {
+            echo "Deployment gate is not enabled." >&2
+            exit 1
+          }
+          for name in AWS_REGION AWS_ROLE_TO_ASSUME EC2_INSTANCE_ID SSM_DOCUMENT_NAME PRODUCTION_HEALTHCHECK_URL; do
             [[ -n "${!name:-}" ]] || {
               echo "Missing GitHub Actions variable: $name" >&2
               exit 1
             }
           done
+          if [[ "$DEPLOY_MODE" == "rollback" && -z "${PRODUCTION_ROLLBACK_HEALTHCHECK_URL:-}" ]]; then
+            echo "Missing GitHub Actions variable: PRODUCTION_ROLLBACK_HEALTHCHECK_URL" >&2
+            exit 1
+          fi
 
       - name: Authenticate to AWS with GitHub OIDC
-        uses: aws-actions/configure-aws-credentials@cabfdba3510de1431bac9dba27511d97497fc100 # v5
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
           role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ env.AWS_REGION }}
@@ -165,14 +167,20 @@ jobs:
         run: |
           bash scripts/ssm_deploy.sh \
             --instance-id "$EC2_INSTANCE_ID" \
+            --document-name "$SSM_DOCUMENT_NAME" \
             --app-user "$EC2_APP_USER" \
             --app-dir "$EC2_APP_DIR" \
             --expected-sha "$TARGET_SHA" \
+            --expected-main-sha "$MAIN_SHA" \
             --mode "$DEPLOY_MODE"
 
       - name: Verify public health endpoint
         shell: bash
         run: |
+          healthcheck_url="$PRODUCTION_HEALTHCHECK_URL"
+          if [[ "$DEPLOY_MODE" == "rollback" ]]; then
+            healthcheck_url="$PRODUCTION_ROLLBACK_HEALTHCHECK_URL"
+          fi
           curl --fail --silent --show-error \
             --retry 5 --retry-delay 5 --retry-all-errors \
-            --max-time 15 "$PRODUCTION_HEALTHCHECK_URL"
+            --max-time 15 "$healthcheck_url"
