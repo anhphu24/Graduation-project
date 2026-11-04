@@ -1,100 +1,113 @@
-# Food Rescue production deployment
+# Food Rescue: GitHub Actions → SSH → EC2
 
-本番環境は `main` の検証済みコミットだけを、GitHub OIDC と AWS Systems Manager Run Command で EC2 に反映します。SSH 秘密鍵と長期 AWS アクセスキーは GitHub に保存しません。
+## Architecture and scope
 
-## 現在の安全状態
+The AWS VocLabs session does not permit IAM role creation (`iam:CreateRole` denied). Therefore the deployment transport is **SSH**, not OIDC or SSM. The existing Django CI, exact commit selection, SQLite backup, migrations, service restart, health checks, and rollback remain.
 
-- 安定版 baseline: `2eac2aed255ed389d7a2a0ca06bedaf841827393`
-- `DEPLOY_ENABLED` が未設定または `true` 以外の場合、deploy job は実行されません。
-- CI/CD のレビュー中は `DEPLOY_ENABLED` を作成しないでください。
-- workflow のテスト job は SQLite の一時 test database だけを使用し、本番 database へ接続しません。
+- Repository: `anhphu24/Graduation-project`
+- Protected branch: `main`
+- EC2 application path: `/var/www/food-rescue`
+- EC2 application user: `ubuntu`
+- systemd service: `food-rescue`
+- SSH deployment is deliberately disabled until `DEPLOY_ENABLED=true` is set as a repository variable.
+- No AWS credentials or IAM role are required by the SSH workflow.
 
-## AWS prerequisites
+## 1. Verify server prerequisites (read-only)
 
-1. EC2 に SSM Agent を導入し、instance profile に `AmazonSSMManagedInstanceCore` を付与します。
-2. GitHub 用 OIDC provider `token.actions.githubusercontent.com` を IAM に作成し、audience を `sts.amazonaws.com` にします。
-3. [`aws/food-rescue-deploy-document.json`](aws/food-rescue-deploy-document.json) を `FoodRescueDeploy` という customer-managed Command document として作成します。汎用の `AWS-RunShellScript` を deploy role から呼び出さないでください。
-4. [`aws/github-oidc-trust-policy.json`](aws/github-oidc-trust-policy.json) の AWS account placeholder を置換して deploy role の trust policy に設定します。
-5. [`aws/github-actions-ssm-policy.json`](aws/github-actions-ssm-policy.json) の placeholder を置換し、deploy role に付与します。この policy は対象 EC2 と `FoodRescueDeploy` document だけに `ssm:SendCommand` を許可します。
-6. EC2 の repository が `main` を取得できる read-only GitHub deploy key を使用します。GitHub Actions 用の SSH key は不要です。
-7. `/etc/food-rescue.env` は root 管理とし、repository に commit しません。必要な項目は [`.env.example`](../.env.example) を参照します。
-
-`DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS=1` と `DJANGO_SECURE_HSTS_PRELOAD=1` は、対象 domain の全 subdomain が HTTPS のみで提供されることを確認してから使用します。条件を満たさない場合は値を下げるだけではなく、`check --deploy --fail-level WARNING` の警告を review して運用方針を決めてください。
-
-SSM document の作成は AWS 管理者が内容を review した後に手動で行います。Phase 1 では実行しません。
+On EC2:
 
 ```bash
-aws ssm create-document \
-  --name FoodRescueDeploy \
-  --document-type Command \
-  --document-format JSON \
-  --content file://ops/aws/food-rescue-deploy-document.json
+sudo systemctl is-active food-rescue nginx
+sudo -u ubuntu git -C /var/www/food-rescue status --porcelain --untracked-files=all
+sudo -u ubuntu git -C /var/www/food-rescue rev-parse HEAD
+sudo test -f /etc/food-rescue.env && echo "env exists"
+sudo test -x /var/www/food-rescue/.venv/bin/python && echo "venv exists"
+sudo -n true && echo "non-interactive sudo available"
+sudo ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub
 ```
 
-document は `interpolationType=ENV_VAR`、`allowedPattern`、`allowedValues` で入力を制限します。`AppUser=ubuntu` と `AppDir=/var/www/food-rescue` も固定し、別の user や path を指定できません。EC2 の SSM Agent は environment variable interpolation に対応する `3.3.2746.0` 以降を使用してください。古い Agent 向け fallback も含まれますが、更新済み Agent を前提に検証します。
+Working tree must be empty. Do not print the production `.env` or database.
 
-## Verified GitHub OIDC identity
+## 2. SSH key dedicated to GitHub deployment
 
-2026-11-04 に public GitHub REST API から次を read-only で確認しました。
+On your TRUSTED local Windows computer (PowerShell), generate a dedicated key:
 
-- repository: `anhphu24/Graduation-project`
-- repository ID: `1400940895`
-- owner ID: `207956026`
-- repository OIDC configuration: `use_default=true`, `use_immutable_subject=true`
-- production environment subject: `repo:anhphu24@207956026/Graduation-project@1400940895:environment:production`
+```powershell
+ssh-keygen -t ed25519 -a 100 -f "$HOME\.ssh\food-rescue-actions" -C "food-rescue-github-actions"
+```
 
-Trust policy は上記 subject と audience `sts.amazonaws.com` の完全一致だけを許可します。repository の OIDC customization を変更した場合は、IAM role を変更する前に subject を再確認してください。OIDC token 自体を log に出力しないでください。
+The runner uses a non-interactive key, so create it without a passphrase and restrict its purpose. Keep the private key off the repository. An unencrypted CI key is highly sensitive; use an environment approval gate, rotate on exposure, and restrict who can edit workflows.
 
-## GitHub environment and variables
+Append ONLY the contents of `food-rescue-actions.pub` as a single line in `/home/ubuntu/.ssh/authorized_keys` on EC2, preserving existing keys. Set directory mode 700, file mode 600 and ubuntu ownership. Test from your local computer using `ssh -i ... ubuntu@HOST` **before** enabling the workflow.
 
-GitHub の `Settings > Environments` で `production` environment を作成し、可能であれば required reviewer と deployment branch `main` を設定します。`DEPLOY_ENABLED` は job 開始前の gate で参照するため repository variable にし、それ以外は repository または `production` environment variables に登録します。
+Your existing EC2 SSH login key should not be reused as a GitHub secret.
 
-| Variable | 内容 |
-|---|---|
-| `AWS_REGION` | EC2 と SSM を使用する AWS region |
-| `AWS_ROLE_TO_ASSUME` | GitHub OIDC が引き受ける IAM role ARN |
-| `EC2_INSTANCE_ID` | 対象 EC2 instance ID |
-| `PRODUCTION_HEALTHCHECK_URL` | 公開 `/health/` URL |
-| `PRODUCTION_ROLLBACK_HEALTHCHECK_URL` | rollback 対象にも存在する公開 URL。初期 baseline では `/` を使用 |
-| `DEPLOY_ENABLED` | 最終テストと承認後にだけ `true` を設定 |
+## 3. Pin EC2 host identity
 
-AWS access key、secret access key、SSH private key は登録しません。OIDC の trust policy は `production` environment の subject に限定されています。
-
-## GitHub ruleset for main
-
-`Settings > Rules > Rulesets` で `main` を対象に active ruleset を作成します。
-
-- Require a pull request before merging
-- Require one approval（単独開発で reviewer を用意できない場合は 0 にし、PR 自体は必須にする）
-- Dismiss stale approvals
-- Require status checks: `Django tests`
-- Require conversation resolution
-- Block force pushes and branch deletion
-- Bypass は原則設定しない
-
-## Deployment sequence
-
-`main` 更新後、workflow は対象 SHA の確定、対象 SHA の test、OIDC 認証、SSM Run Command の順に実行します。rollback でも指定した SHA を checkout し、Django check、migration check、unit tests が成功しなければ deploy job は実行されません。deployment tooling は同時に確定した `origin/main` の SHA から取得して検証します。workflow の検証後に `origin/main` が変化した場合、EC2 側は deploy を拒否するため、未検証の新しい tooling が途中で使われることはありません。
-
-EC2 script は clean working tree と `origin/main` を再確認し、対象 commit に detached HEAD で切り替えます。`git reset --hard` と `git clean` は使用しません。
-
-本番 check が成功した後に service を停止し、SQLite online-backup API で `/var/backups/food-rescue` に backup を作成します。その後 migration、collectstatic、service restart、local health check、commit SHA 確認を行います。`db.sqlite3`、`media/`、`/etc/food-rescue.env` は Git の更新対象外です。
-
-## Rollback
-
-Actions の `Deploy production` を手動実行し、`operation=rollback` と `main` 履歴内の full commit SHA を指定します。rollback は code と dependencies を対象とし、reverse migration を自動実行しません。初期 baseline には `/health/` が存在しないため、rollback の local/public health check は `/` を使用します。
-
-Migration 後、service restart 前に失敗した場合だけ、script は integrity check 済みの SQLite backup を自動復元します。service を一度 restart した後は新しい書き込みを失う可能性があるため database を自動復元しません。この場合は exit code `40` で automatic rollback incomplete と報告し、成功扱いにしません。backup path を log に残し、停止時間と data 差分を確認してから手動復元します。
-
-## Phase 1 verification
+On the EC2 itself, inspect the SSH host public key:
 
 ```bash
-bash -n scripts/deploy_ec2.sh
-bash -n scripts/ssm_deploy.sh
-bash -n scripts/resolve_deploy_target.sh
-bash scripts/tests/test_resolve_deploy_target.sh
-bash scripts/tests/test_ssm_deploy.sh
-bash scripts/run_ci.sh
+sudo cat /etc/ssh/ssh_host_ed25519_key.pub
+sudo ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub
 ```
 
-Phase 1 では workflow file の review と CI 成功を確認します。`DEPLOY_ENABLED` は設定せず、SSM command と production deployment は実行しません。
+Record and independently verify the public key/fingerprint through the existing trusted SSH session. In a known_hosts line, use the EC2 public IP/DNS name and this exact public key:
+
+```text
+HOSTNAME ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA... 
+```
+
+For port other than 22, use `[HOSTNAME]:PORT ssh-ed25519 ...`. Do not blindly trust an unauthenticated `ssh-keyscan` result.
+
+## 4. GitHub configuration
+
+At Settings → Environments, create `production`, restrict deployment branches to `main`, and configure reviewers if your plan/repository supports them. Protect `main` with PR and `Django tests` rules.
+
+At Settings → Secrets and variables → Actions:
+
+**Repository variables** (or environment variables except the deploy gate):
+
+- `EC2_SSH_HOST`: verified EC2 public IP or DNS name (DuckDNS is usable only when updated to the current IP)
+- `EC2_SSH_PORT`: usually `22`
+- `PRODUCTION_HEALTHCHECK_URL`: `https://YOUR-DOMAIN/health/` (publicly accessible over valid HTTPS)
+- `PRODUCTION_ROLLBACK_HEALTHCHECK_URL`: `https://YOUR-DOMAIN/` (older baseline)
+- `DEPLOY_ENABLED`: unset / `false` during setup (must be a **repository variable**, not only environment-scoped, because job condition evaluates before entering environment)
+
+**production environment secrets**:
+
+- `EC2_SSH_PRIVATE_KEY`: exact private OpenSSH key text from dedicated key
+- `EC2_SSH_KNOWN_HOSTS`: verified single-line host public key binding in OpenSSH known_hosts format
+
+Never paste either secret into chat, issues, logs, pull requests or source files. `EC2_SSH_KNOWN_HOSTS` is not itself confidential, but store it as a secret to protect workflow configuration from accidental exposure.
+
+## 5. SSH access and network reality
+
+Port 22 ingress on the EC2 Security Group must be reachable from the runner. Standard GitHub-hosted runner IPs are dynamic and broad; **do not open 22 to 0.0.0.0/0 merely to make CI work**. GitHub does not recommend ordinary hosted runners for security-group IP allowlists. Prefer a self-hosted runner on a trusted machine/network with a fixed outgoing IP or GitHub-hosted larger runner with static IP where available. Alternatively use an approved narrow temporary allowlist with explicit expiration and audit, acknowledging that rotating runner IPs may break deployments.
+
+For a self-hosted runner, be careful: its host is trusted to execute repository workflows and must not run untrusted PR code with deployment credentials. Keep deploy jobs on protected branches/environments only.
+
+## 6. Deployment behavior
+
+- PR → CI tests.
+- push to main → resolve exact SHA → test candidate and tooling.
+- deploy job is **skipped** unless repository variable `DEPLOY_ENABLED=true`.
+- Workflow checks out the reviewed main tooling SHA.
+- `ssh_deploy.sh` requires a pinned host key, dedicated SSH key, `ubuntu`, and non-interactive sudo. The reviewed `deploy_ec2.sh` is streamed over SSH to `sudo /bin/bash -s`.
+- Server confirms clean Git tree and exact `origin/main` SHA, then deploys or rolls back only to an ancestor of main.
+- Backup SQLite → migration when deploy → collectstatic → restart systemd → health check.
+- Rollback of code does **not** automatically reverse migrations; test backup/restore on a staging copy before first production deploy.
+
+**Security note:** Current `ubuntu` has sudo for the streamed script. It is a powerful credential on the EC2. A dedicated restricted deployment account and server-side root-owned wrapper would reduce risk, but requires further server setup; avoid granting this key to untrusted workflows.
+
+## 7. First production deployment
+
+1. Merge the SSH transport PR only after CI passes.
+2. Verify authentication + host key manually from an isolated local test, and verify the server's read-only baseline.
+3. Verify backup/restore on a copy of SQLite and production HTTPS health endpoint.
+4. Ensure `production` environment and branch protections exist.
+5. Only then set the repository variable `DEPLOY_ENABLED=true`.
+6. Actions → **Deploy production** → Run workflow → branch `main` → operation `deploy`. Approve environment if required.
+7. Confirm workflow success, `food-rescue` and `nginx` active, public `/health/` returns HTTP 200, and EC2 SHA equals the recorded target.
+8. Consider resetting `DEPLOY_ENABLED=false` after the initial controlled deployment until ready for automatic deployments.
+
+Do not run any AWS IAM/SSM creation commands for this SSH route. Files under `ops/aws/` and `scripts/ssm_deploy.sh` are retained as historical alternatives but are **not called** by active CI/CD.
