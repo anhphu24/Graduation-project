@@ -1,0 +1,67 @@
+name: SSH smoke test (read only)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ssh-smoke:
+    name: Verify SSH connection without deployment
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    environment:
+      name: production
+    env:
+      SSH_HOST: ${{ vars.EC2_SSH_HOST }}
+      SSH_PORT: ${{ vars.EC2_SSH_PORT || '22' }}
+      SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+      SSH_KNOWN_HOSTS: ${{ secrets.EC2_SSH_KNOWN_HOSTS }}
+    steps:
+      - name: Verify EC2 SSH, sudo and services (read only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$SSH_HOST" && -n "$SSH_PRIVATE_KEY" && -n "$SSH_KNOWN_HOSTS" ]] || {
+            echo "Missing SSH host or environment secrets" >&2
+            exit 1
+          }
+          [[ "$SSH_HOST" =~ ^[A-Za-z0-9][A-Za-z0-9.-]*$ ]] || exit 1
+          [[ "$SSH_PORT" =~ ^[0-9]{1,5}$ ]] || exit 1
+          (( 10#$SSH_PORT >= 1 && 10#$SSH_PORT <= 65535 )) || exit 1
+          keydir="$(mktemp -d)"
+          trap 'rm -rf -- "$keydir"' EXIT
+          umask 077
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$keydir/deploy_key"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$keydir/known_hosts"
+          ssh-keygen -y -P '' -f "$keydir/deploy_key" >/dev/null
+          host_lookup="$SSH_HOST"
+          if [[ "$SSH_PORT" != "22" ]]; then
+            host_lookup="[$SSH_HOST]:$SSH_PORT"
+          fi
+          ssh-keygen -F "$host_lookup" -f "$keydir/known_hosts" >/dev/null || {
+            echo "Verified known_hosts entry not found" >&2
+            exit 1
+          }
+          ssh -T \
+            -o BatchMode=yes -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$keydir/known_hosts" \
+            -o GlobalKnownHostsFile=/dev/null \
+            -o ConnectTimeout=15 \
+            -o ForwardAgent=no -o ClearAllForwardings=yes \
+            -i "$keydir/deploy_key" \
+            -p "$SSH_PORT" \
+            "ubuntu$@SSH_HOST" \
+            'set -eu
+             test "$(whoami)" = ubuntu
+             echo SSH_OK
+             sudo -n true
+             echo SUDO_OK
+             test "$(systemctl is-active nginx)" = active
+             test "$(systemctl is-active food-rescue)" = active
+             echo SERVICES_OK
+             git -C /var/www/food-rescue rev-parse --short HEAD
+             test -z "$(git -C /var/www/food-rescue status --porcelain --untracked-files=all)"
+             echo GIT_CLEAN'
