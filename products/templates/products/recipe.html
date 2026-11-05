@@ -1,9 +1,13 @@
-{% extends 'base.html' %}
+{% extends 'customer_base.html' %}
 {% block title %}レシピ｜食品ロス削減{% endblock %}
-{% block body %}
-<main style="max-width:720px;margin:90px auto;padding:36px;background:white;border-radius:20px;text-align:center">
-  <h1>レシピ</h1>
-  <p>この画面は現在開発中です。（UIサンプル未提供）</p>
-  <a href="{% url 'products:top' %}">トップページに戻る</a>
+{% block page_content %}
+<main class="customer-main customer-main--centered">
+  <section class="customer-panel customer-panel--empty" aria-labelledby="recipe-title">
+    <span class="customer-empty-icon" aria-hidden="true">🍳</span>
+    <p class="customer-eyebrow">RESCUE RECIPE</p>
+    <h1 id="recipe-title">レシピ</h1>
+    <p>食品をおいしく使い切るためのレシピを準備しています。</p>
+    <a class="customer-button" href="{% url 'products:top' %}">トップページに戻る</a>
+  </section>
 </main>
 {% endblock %}

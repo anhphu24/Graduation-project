@@ -1,4 +1,4 @@
-{% extends 'customer_base.html' %}
+{% extends 'customer_auth_base.html' %}
 {% load static %}
 
 {% block title %}
@@ -37,39 +37,25 @@
     <!-- 新規登録完了エリア -->
     <section class="auth-card signup">
 
-        <div style="text-align: center; padding: 30px 10px;">
+        <div class="customer-completion">
 
             <!-- 完了アイコン -->
-            <div style="
-                width: 80px;
-                height: 80px;
-                margin: 0 auto 25px;
-                border-radius: 50%;
-                background-color: #e3f3e9;
-                color: #146C5B;
-                font-size: 42px;
-                line-height: 80px;
-            ">
+            <div class="customer-completion__icon" aria-hidden="true">
                 ✓
             </div>
 
-            <h2 style="color: #146C5B;">
+            <h2 class="customer-completion__title">
                 新規登録が完了しました
             </h2>
 
-            <p style="margin-top: 20px; line-height: 1.8;">
+            <p class="customer-completion__message">
                 登録が完了しました<br />
                 もう一度ログインしてください
             </p>
 
             <!-- ログイン画面へ移動 -->
             <a href="{% url 'accounts:customer_login' %}"
-               class="btn coral"
-               style="
-                   display: block;
-                   margin-top: 25px;
-                   text-decoration: none;
-               ">
+               class="btn coral customer-completion__action">
 
                 ログイン画面へ
                 <span aria-hidden="true">→</span>

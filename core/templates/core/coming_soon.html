@@ -1,13 +1,17 @@
-{% extends 'base.html' %}
+{% extends 'customer_base.html' %}
 {% block title %}{{ heading }}｜食品ロス削減{% endblock %}
-{% block body %}
-<main style="max-width:720px;margin:90px auto;padding:36px;background:#fff;border-radius:20px;text-align:center">
-  <h1>{{ heading }}</h1>
-  <p>この画面は現在開発中です。（UIサンプル未提供）</p>
+{% block page_content %}
+<main class="customer-main customer-main--centered">
+  <section class="customer-panel customer-panel--empty" aria-labelledby="coming-soon-title">
+    <span class="customer-empty-icon" aria-hidden="true">🌱</span>
+    <p class="customer-eyebrow">COMING SOON</p>
+    <h1 id="coming-soon-title">{{ heading }}</h1>
+    <p>より使いやすい体験をお届けするため、現在このページを準備しています。</p>
   {% if request.user.is_authenticated %}
-    <a href="{% url 'products:top' %}">トップページに戻る</a>
+    <a class="customer-button" href="{% url 'products:top' %}">トップページに戻る</a>
   {% else %}
-    <a href="{% url 'core:index' %}">トップページに戻る</a>
+    <a class="customer-button" href="{% url 'products:list' %}">商品を探す</a>
   {% endif %}
+  </section>
 </main>
 {% endblock %}

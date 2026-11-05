@@ -1,144 +1,139 @@
-/* 全体のコンテナレイアウト */
 .detail-main {
-    max-width: 900px;
-    margin: 40px auto;
-    padding: 0 20px;
-    font-family: sans-serif;
-    color: #333;
+  width: min(980px, calc(100% - 40px));
+  min-height: 65vh;
+  margin: 0 auto;
+  padding: 44px 0 72px;
 }
 
 .detail-container {
-    background: #ffffff;
-    border: 1px solid #e0e0e0;
-    border-radius: 12px;
-    padding: 30px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 30px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 32px;
+  padding: 32px;
+  border: 1px solid var(--fr-line);
+  border-radius: var(--fr-radius-lg);
+  background: var(--fr-surface);
+  box-shadow: var(--fr-shadow-sm);
 }
 
-@media (max-width: 768px) {
-    .detail-container {
-        grid-template-columns: 1fr;
-    }
+.detail-left,
+.detail-right {
+  min-width: 0;
 }
 
-/* 左側（カテゴリー・画像） */
-.detail-left {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+.detail-left,
+.detail-right {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
-.category-badge .category-label {
-    background-color: #e8f5e9;
-    color: #2e7d32;
-    padding: 6px 12px;
-    border-radius: 4px;
-    font-size: 14px;
-    font-weight: bold;
+.category-label {
+  display: inline-flex;
+  padding: 6px 11px;
+  border-radius: 99px;
+  background: var(--fr-mint);
+  color: var(--fr-green-dark);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.product-image-box {
+  overflow: hidden;
+  border-radius: var(--fr-radius-md);
+  background: var(--fr-mint);
 }
 
 .product-image-box img {
-    width: 100%;
-    height: auto;
-    max-height: 350px;
-    object-fit: cover;
-    border-radius: 8px;
-    border: 1px solid #eee;
-}
-
-/* 右側（テキスト情報） */
-.detail-right {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
 }
 
 .product-title {
-    font-size: 24px;
-    font-weight: bold;
-    margin: 0;
-    color: #111;
+  margin: 0;
+  color: var(--fr-ink);
+  font-size: clamp(24px, 4vw, 34px);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
-.shop-name {
-    font-size: 15px;
-    color: #666;
-    margin: 0;
+.shop-name,
+.stock-status,
+.description-text {
+  margin: 0;
+  color: var(--fr-muted);
+  line-height: 1.75;
 }
 
 .expiry-date {
-    font-size: 15px;
-    color: #c62828; /* 期限切れ間近の警告色 */
-    margin: 0;
+  margin: 0;
+  color: #a54737;
 }
 
-.stock-status {
-    font-size: 15px;
-    color: #444;
-    margin: 0;
-}
-
-/* 価格エリア */
 .price-box {
-    background: #f9f9f9;
-    padding: 15px;
-    border-radius: 6px;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    margin: 10px 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 16px;
+  margin: 8px 0;
+  padding: 17px;
+  border-radius: var(--fr-radius-sm);
+  background: #f3f7f3;
 }
 
 .old-price {
-    font-size: 14px;
-    color: #888;
+  color: #849088;
+  font-size: 13px;
 }
 
 .new-price {
-    font-size: 22px;
-    color: #d32f2f;
-}
-
-/* 商品説明 */
-.description-section {
-    margin-top: 10px;
+  color: var(--fr-coral);
+  font-size: 23px;
 }
 
 .description-section h3 {
-    font-size: 16px;
-    border-bottom: 2px solid #2e7d32;
-    padding-bottom: 4px;
-    margin-bottom: 8px;
-    color: #2e7d32;
+  margin: 0 0 9px;
+  padding-bottom: 7px;
+  border-bottom: 2px solid var(--fr-mint-strong);
+  color: var(--fr-green-dark);
+  font-size: 16px;
 }
 
-.description-text {
-    font-size: 14px;
-    line-height: 1.6;
-    color: #555;
-    margin: 0;
-}
-
-/* 戻るボタン */
 .action-buttons {
-    margin-top: 20px;
+  margin-top: auto;
+  padding-top: 12px;
 }
 
 .back-button {
-    display: inline-block;
-    background-color: #4f4f4f;
-    color: #fff;
-    padding: 10px 20px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 14px;
-    text-align: center;
-    transition: background-color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 18px;
+  border: 1px solid var(--fr-green);
+  border-radius: var(--fr-radius-sm);
+  color: var(--fr-green);
+  font-weight: 800;
 }
 
 .back-button:hover {
-    background-color: #333;
+  background: var(--fr-mint);
+}
+
+@media (max-width: 760px) {
+  .detail-main {
+    width: calc(100% - 28px);
+    padding: 28px 0 48px;
+  }
+
+  .detail-container {
+    grid-template-columns: 1fr;
+    padding: 22px;
+  }
+
+  .back-button {
+    width: 100%;
+  }
 }

@@ -1,33 +1,15 @@
-{% extends 'base.html' %}
+{% extends 'customer_auth_base.html' %}
 
-{% load static %}
+{% block title %}ログアウト完了 | 食品ロス削減アプリ{% endblock %}
 
-{% block title %}ログアウト確認 | 食品ロス削減アプリ{% endblock %}
-
-{% block body_class %}{% endblock %}
-
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/logout.css' %}">{% endblock %}
-
-{% block body %}
-<header class="logout-header">
-      <a href="{% url 'products:top' %}" class="logout-logo"> 🌿 食品ロス削減 </a>
-    </header>
-
-    <main class="logout-container">
-      <section class="logout-card">
-        <h1>ログアウト確認</h1>
-
-        <p>ログアウトしますか？</p>
-
-        <div class="logout-buttons">
-          <a href="{% url 'accounts:customer_login' %}" class="logout-button confirm-button">
-            ログアウトする
-          </a>
-
-          <a href="{% url 'accounts:mypage' %}" class="logout-button cancel-button">
-            キャンセル
-          </a>
-        </div>
-      </section>
-    </main>
+{% block page_content %}
+<main class="customer-main customer-main--centered">
+  <section class="customer-panel customer-panel--empty" aria-labelledby="logout-title">
+    <span class="customer-empty-icon" aria-hidden="true">👋</span>
+    <p class="customer-eyebrow">SIGNED OUT</p>
+    <h1 id="logout-title">ログアウトしました</h1>
+    <p>ご利用ありがとうございました。またのお越しをお待ちしています。</p>
+    <a href="{% url 'accounts:customer_login' %}" class="customer-button">ログイン画面へ</a>
+  </section>
+</main>
 {% endblock %}

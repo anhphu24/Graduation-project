@@ -1,36 +1,22 @@
-{% extends 'base.html' %}
+{% extends 'customer_base.html' %}
 {% load static %}
 
 {% block title %}トップ｜食品ロス削減アプリ{% endblock %}
-{% block body_class %}top-page{% endblock %}
+{% block body_class %}customer-page top-page{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/common.css' %}">
+{% block customer_extra_css %}
 <link rel="stylesheet" href="{% static 'css/top.css' %}">
 {% endblock %}
 
-{% block body %}
-  {# 既存ナビゲーション・ログアウト(POST)をそのまま利用 #}
-  <header class="top-header">
-    <a class="top-logo" href="{% url 'products:top' %}" aria-label="食品ロス削減 トップへ">
-      <span class="top-logo-icon" aria-hidden="true">🌿</span>
-      <span>食品ロス削減<small>おいしいを、ムダにしない。</small></span>
-    </a>
-    {% include 'includes/navbar.html' %}
-  </header>
-
+{% block page_content %}
   <main class="fr-main">
     {% include 'products/partials/top_hero.html' %}
     {% include 'products/partials/top_search.html' %}
     {% include 'products/partials/top_products.html' %}
     {% include 'products/partials/top_steps.html' %}
   </main>
-
-  <footer class="top-footer">
-    <span>© 食品ロス削減アプリ</span><span>おいしいを、ムダにしない。</span>
-  </footer>
 {% endblock %}
 
-{% block extra_js %}
+{% block customer_extra_js %}
 <script defer src="{% static 'js/top.js' %}"></script>
 {% endblock %}

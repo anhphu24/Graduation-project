@@ -1,9 +1,13 @@
-{% extends 'base.html' %}
+{% extends 'customer_base.html' %}
 {% block title %}予約履歴｜食品ロス削減{% endblock %}
-{% block body %}
-<main style="max-width:720px;margin:90px auto;padding:36px;background:white;border-radius:20px;text-align:center">
-  <h1>予約履歴</h1>
-  <p>この画面は現在開発中です。（UIサンプル未提供）</p>
-  <a href="{% url 'core:index' %}">トップページに戻る</a>
+{% block page_content %}
+<main class="customer-main customer-main--centered">
+  <section class="customer-panel customer-panel--empty" aria-labelledby="history-title">
+    <span class="customer-empty-icon" aria-hidden="true">🧾</span>
+    <p class="customer-eyebrow">MY ORDERS</p>
+    <h1 id="history-title">予約履歴</h1>
+    <p>予約履歴は「予約履歴・状況」から確認できます。</p>
+    <a class="customer-button" href="{% url 'market:orders' %}">予約履歴・状況を見る</a>
+  </section>
 </main>
 {% endblock %}

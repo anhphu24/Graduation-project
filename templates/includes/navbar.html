@@ -1,13 +1,47 @@
-<nav class="top-nav">
-  <a href="{% url 'products:list' %}">商品を探す</a>
-  <a href="{% url 'core:notifications' %}">🔔 通知</a>
-  <a href="{% url 'market:orders' %}">予約履歴・状況</a>
-  <a href="{% url 'reservations:cart' %}">🛒 カート</a>
-  <a href="{% url 'accounts:mypage' %}">マイページ</a>
- <form method="POST"
-      action="{% url 'accounts:customer_logout' %}"
-      class="logout-form">
-    {% csrf_token %}
-    <button type="submit" class="logout-link">ログアウト</button>
-</form>
+{% with namespace=request.resolver_match.namespace url_name=request.resolver_match.url_name %}
+<nav class="customer-nav" aria-label="カスタマーナビゲーション">
+  <a
+    class="customer-nav__link{% if namespace == 'products' and url_name != 'top' or namespace == 'market' and url_name == 'lot_list' or namespace == 'market' and url_name == 'lot_detail' %} is-active{% endif %}"
+    href="{% url 'products:list' %}"
+    {% if namespace == 'products' and url_name != 'top' or namespace == 'market' and url_name == 'lot_list' or namespace == 'market' and url_name == 'lot_detail' %}aria-current="page"{% endif %}
+  >商品を探す</a>
+
+  {% if request.user.is_authenticated %}
+    <a
+      class="customer-nav__link{% if namespace == 'core' and url_name == 'notifications' %} is-active{% endif %}"
+      href="{% url 'core:notifications' %}"
+      {% if namespace == 'core' and url_name == 'notifications' %}aria-current="page"{% endif %}
+    ><span aria-hidden="true">🔔</span> 通知</a>
+    <a
+      class="customer-nav__link{% if namespace == 'market' and url_name == 'orders' or namespace == 'reservations' and url_name == 'history' %} is-active{% endif %}"
+      href="{% url 'market:orders' %}"
+      {% if namespace == 'market' and url_name == 'orders' or namespace == 'reservations' and url_name == 'history' %}aria-current="page"{% endif %}
+    >予約履歴・状況</a>
+    <a
+      class="customer-nav__link{% if namespace == 'reservations' and url_name == 'cart' %} is-active{% endif %}"
+      href="{% url 'reservations:cart' %}"
+      {% if namespace == 'reservations' and url_name == 'cart' %}aria-current="page"{% endif %}
+    ><span aria-hidden="true">🛒</span> カート</a>
+    <a
+      class="customer-nav__link{% if namespace == 'accounts' and url_name == 'mypage' %} is-active{% endif %}"
+      href="{% url 'accounts:mypage' %}"
+      {% if namespace == 'accounts' and url_name == 'mypage' %}aria-current="page"{% endif %}
+    >マイページ</a>
+    <form method="post" action="{% url 'accounts:customer_logout' %}" class="customer-nav__form">
+      {% csrf_token %}
+      <button type="submit" class="customer-nav__link customer-nav__logout">ログアウト</button>
+    </form>
+  {% else %}
+    <a
+      class="customer-nav__link{% if namespace == 'core' and url_name == 'login_choice' %} is-active{% endif %}"
+      href="{% url 'core:login_choice' %}"
+      {% if namespace == 'core' and url_name == 'login_choice' %}aria-current="page"{% endif %}
+    >ログイン</a>
+    <a
+      class="customer-nav__link customer-nav__primary{% if namespace == 'accounts' and url_name == 'customer_signup' %} is-active{% endif %}"
+      href="{% url 'accounts:customer_signup' %}"
+      {% if namespace == 'accounts' and url_name == 'customer_signup' %}aria-current="page"{% endif %}
+    >新規登録</a>
+  {% endif %}
 </nav>
+{% endwith %}
