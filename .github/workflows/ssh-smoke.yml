@@ -53,7 +53,7 @@ jobs:
             -o ForwardAgent=no -o ClearAllForwardings=yes \
             -i "$keydir/deploy_key" \
             -p "$SSH_PORT" \
-            "ubuntu$@SSH_HOST" \
+            "ubuntu@${SSH_HOST}" \
             'set -eu
              test "$(whoami)" = ubuntu
              echo SSH_OK
