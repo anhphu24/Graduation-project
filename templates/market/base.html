@@ -2,8 +2,9 @@
 {% load static %}
 {% block title %}{% block market_title %}フードレスキュー{% endblock %}｜食品ロス削減{% endblock %}
 {% block body_class %}market-page{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/market.css' %}">{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/market.css' %}?v=market-ui-1">{% endblock %}
 {% block body %}
+{% block market_header %}
 <header class="market-header">
   <a class="market-brand" href="{% url 'market:lot_list' %}">🌿 食品ロス削減</a>
   <nav class="market-nav" aria-label="メインナビゲーション">
@@ -17,7 +18,10 @@
     {% endif %}
   </nav>
 </header>
+{% endblock %}
 {% if messages %}<div class="market-messages" aria-live="polite">{% for message in messages %}<p class="market-message market-message--{{ message.tags }}">{{ message }}</p>{% endfor %}</div>{% endif %}
 <main class="market-main">{% block market_content %}{% endblock %}</main>
+{% block market_footer %}
 <footer class="market-footer">© 食品ロス削減アプリ</footer>
+{% endblock %}
 {% endblock %}

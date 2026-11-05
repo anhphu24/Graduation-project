@@ -1,0 +1,16 @@
+<header class="customer-header">
+  <div class="customer-header__inner">
+    <a class="customer-brand" href="{% url 'products:top' %}" aria-label="食品ロス削減 トップへ">
+      <span class="customer-brand__mark" aria-hidden="true">🌿</span>
+      <span class="customer-brand__copy">
+        <strong>食品ロス削減</strong>
+        <small>おいしいを、ムダにしない。</small>
+      </span>
+    </a>
+
+    <details class="customer-menu" open>
+      <summary class="customer-menu__toggle">メニュー</summary>
+      {% include 'includes/navbar.html' %}
+    </details>
+  </div>
+</header>

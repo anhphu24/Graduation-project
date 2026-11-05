@@ -4,6 +4,7 @@ from decimal import Decimal
 
 from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied, ValidationError
+from django.templatetags.static import static
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -76,9 +77,13 @@ class MarketFlowTests(TestCase):
     def test_public_list_and_detail_show_available_lot(self):
         response = self.client.get(reverse("market:lot_list"))
         self.assertContains(response, self.product.name)
+        self.assertContains(response, 'class="customer-header"')
+        self.assertContains(response, 'class="customer-footer"')
         detail = self.client.get(reverse("market:lot_detail", args=(self.lot.pk,)))
         self.assertContains(detail, self.branch.name)
         self.assertContains(detail, "300")
+        self.assertContains(detail, 'class="customer-header"')
+        self.assertContains(detail, 'class="customer-footer"')
 
     def test_reserve_decrements_inventory_and_is_idempotent(self):
         token = uuid.uuid4()
@@ -149,8 +154,58 @@ class MarketFlowTests(TestCase):
 
     def test_staff_pages_render_for_authorized_member(self):
         self.client.force_login(self.staff)
-        self.assertEqual(self.client.get(reverse("market:staff")).status_code, 200)
+        dashboard = self.client.get(reverse("market:staff"))
+        self.assertEqual(dashboard.status_code, 200)
+        self.assertContains(dashboard, 'class="market-header"')
+        self.assertNotContains(dashboard, 'class="customer-header"')
         self.assertEqual(self.client.get(reverse("market:lot_new")).status_code, 200)
+
+    def test_customer_pages_share_header_and_active_navigation(self):
+        self.client.force_login(self.customer)
+        pages = (
+            (reverse("products:top"), 0),
+            (reverse("products:list"), 1),
+            (reverse("products:detail"), 1),
+            (reverse("products:recipe"), 1),
+            (reverse("market:orders"), 1),
+            (reverse("core:notifications"), 1),
+            (reverse("reservations:cart"), 1),
+            (reverse("reservations:create"), 0),
+            (reverse("reservations:confirm"), 0),
+            (reverse("accounts:mypage"), 1),
+        )
+
+        for url, active_count in pages:
+            with self.subTest(url=url):
+                response = self.client.get(url)
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, 'class="customer-header"')
+                self.assertContains(response, 'class="customer-footer"')
+                self.assertContains(
+                    response,
+                    f'href="{static("css/common.css")}?v=customer-ui-1"',
+                )
+                self.assertContains(response, "おいしいを、ムダにしない。")
+                self.assertContains(response, "商品を探す")
+                self.assertContains(response, "通知")
+                self.assertContains(response, "予約履歴・状況")
+                self.assertContains(response, "カート")
+                self.assertContains(response, "マイページ")
+                self.assertContains(response, "ログアウト")
+                self.assertEqual(
+                    response.content.decode().count('aria-current="page"'),
+                    active_count,
+                )
+
+    def test_public_product_list_uses_customer_header_without_logout(self):
+        response = self.client.get(reverse("products:list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="customer-header"')
+        self.assertContains(response, f'href="{reverse("core:login_choice")}"')
+        self.assertContains(response, "ログイン")
+        self.assertContains(response, "新規登録")
+        self.assertNotContains(response, "ログアウト")
 
     def test_coming_soon_pages_return_authenticated_customer_to_top(self):
         self.client.force_login(self.customer)

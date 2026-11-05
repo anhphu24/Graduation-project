@@ -1,15 +1,15 @@
-{% extends 'base.html' %}
+{% extends 'customer_base.html' %}
 {% load static %}
 
 {% block title %}{{ product.name }}の詳細 | 食品ロス削減アプリ{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/detail.css' %}">
+{% block customer_extra_css %}
+<link rel="stylesheet" href="{% static 'css/detail.css' %}?v=customer-ui-1">
 {% endblock %}
 
-{% block body %}
+{% block page_content %}
 <main class="detail-main">
-    <div class="detail-container">
+    <article class="detail-container">
         
         <!-- 上部：カテゴリー & 商品画像 -->
         <div class="detail-left">
@@ -50,10 +50,10 @@
             </div>
 
             <div class="action-buttons">
-                <a href="{% url 'products:top' %}" class="back-button">トップに戻る</a>
+                <a href="{% url 'products:list' %}" class="back-button">商品一覧に戻る</a>
             </div>
         </div>
 
-    </div>
+    </article>
 </main>
 {% endblock %}

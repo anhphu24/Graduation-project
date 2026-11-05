@@ -1,9 +1,9 @@
-{% extends 'customer_base.html' %}
+{% extends 'customer_auth_base.html' %}
 {% load static %}
 
 {% block title %}新規会員登録｜食品ロス削減アプリ{% endblock %}
 
-{% block extra_css %}
+{% block auth_extra_css %}
 <style>
   .form-errors {
     background-color: #fff0ed;
@@ -337,8 +337,7 @@
 
       <button
         type="submit"
-        class="btn coral"
-        style="margin-top: 25px"
+        class="btn coral customer-signup-submit"
       >
 
         登録する

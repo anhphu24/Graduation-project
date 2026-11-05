@@ -603,6 +603,7 @@ a:hover {
     transition: none !important;
     scroll-behavior: auto !important;
   }
+}
 
 /*　ユーザー名 */
 .top-brand {
@@ -625,7 +626,4 @@ a:hover {
     color: #26332f;
     white-space: nowrap;
     margin: 0;
-}
-```
-
 }
