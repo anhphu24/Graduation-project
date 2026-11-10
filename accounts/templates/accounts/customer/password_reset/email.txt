@@ -1,0 +1,11 @@
+Food Rescueをご利用いただき、ありがとうございます。
+
+パスワード再設定のリクエストを受け付けました。
+次のリンクから新しいパスワードを設定してください。
+
+{{ protocol }}://{{ domain }}{% url 'accounts:customer_password_reset_confirm' uidb64=uid token=token %}
+
+このリンクの有効期限は{{ password_reset_timeout_minutes }}分です。
+このメールに心当たりがない場合は、何もせず破棄してください。現在のパスワードは変更されません。
+
+Food Rescue

@@ -168,11 +168,39 @@
 
 .customer-nav__form {
   display: inline-flex;
+  align-items: center;
   margin: 0;
 }
 
-.customer-nav__logout {
+.customer-page .customer-nav__logout {
   appearance: none;
+  gap: 6px;
+  min-height: 40px;
+  padding: 7px 11px;
+  border: 1px solid #cfdcd5;
+  background: var(--fr-surface);
+  color: #52695d;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.customer-nav__logout-icon {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.customer-nav__logout:hover {
+  border-color: #e5b6ae;
+  background: #fff0ed;
+  color: #98463c;
 }
 
 .customer-menu__toggle:focus-visible,
@@ -181,6 +209,10 @@
 .customer-button:focus-visible {
   outline: 3px solid #8bcdb2;
   outline-offset: 3px;
+}
+
+.customer-nav__logout:focus-visible {
+  outline-color: #dda198;
 }
 
 .customer-main {
@@ -326,6 +358,7 @@
 
 @media (max-width: 650px) {
   .customer-header__inner {
+    position: relative;
     align-items: center;
     flex-direction: row;
     width: calc(100% - 28px);
@@ -342,7 +375,8 @@
   }
 
   .customer-menu {
-    position: relative;
+    position: static;
+    flex: 0 0 auto;
     width: auto;
     margin-left: auto;
   }

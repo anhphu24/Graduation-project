@@ -1,0 +1,7 @@
+{% if messages %}
+  <div class="mypage-messages" aria-live="polite" aria-atomic="true">
+    {% for message in messages %}
+      <p class="mypage-message mypage-message--{{ message.tags|default:'info' }}">{{ message }}</p>
+    {% endfor %}
+  </div>
+{% endif %}

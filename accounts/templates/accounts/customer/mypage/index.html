@@ -1,0 +1,71 @@
+{% extends 'customer_base.html' %}
+{% load static %}
+
+{% block title %}マイページ｜食品ロス削減{% endblock %}
+{% block customer_extra_css %}
+  <link rel="stylesheet" href="{% static 'css/mypage.css' %}?v=mypage-1">
+{% endblock %}
+
+{% block page_content %}
+<main class="mypage-main">
+  {% include 'accounts/customer/mypage/_messages.html' %}
+
+  <header class="mypage-hero">
+    <div>
+      <p class="mypage-kicker">MY PAGE</p>
+      <h1>マイページ</h1>
+      <p>{{ request.user.first_name|default:'お客様' }}さんのアカウント情報と設定を管理できます。</p>
+    </div>
+    <a class="mypage-button mypage-button--secondary" href="{% url 'products:list' %}">商品を探す</a>
+  </header>
+
+  <div class="mypage-grid">
+    <section class="mypage-card mypage-card--profile" aria-labelledby="account-heading">
+      <div class="mypage-card__heading">
+        <span class="mypage-icon" aria-hidden="true">👤</span>
+        <div><p>ACCOUNT</p><h2 id="account-heading">アカウント情報</h2></div>
+      </div>
+      <dl class="mypage-profile-list">
+        <div><dt>お名前</dt><dd>{{ request.user.last_name }} {{ request.user.first_name }}</dd></div>
+        <div><dt>フリガナ</dt><dd>{{ request.user.profile.family_kana }} {{ request.user.profile.given_kana }}</dd></div>
+        <div><dt>メールアドレス</dt><dd class="mypage-break">{{ request.user.email }}</dd></div>
+        <div><dt>登録日</dt><dd>{{ request.user.date_joined|date:'Y年n月j日' }}</dd></div>
+      </dl>
+    </section>
+
+    <section class="mypage-card" aria-labelledby="reservation-heading">
+      <div class="mypage-card__heading">
+        <span class="mypage-icon" aria-hidden="true">🧾</span>
+        <div><p>RESERVATIONS</p><h2 id="reservation-heading">予約状況</h2></div>
+      </div>
+      <div class="mypage-stats" aria-label="予約件数">
+        <div><strong>{{ order_summary.reserved }}</strong><span>受取前</span></div>
+        <div><strong>{{ order_summary.collected }}</strong><span>受取済み</span></div>
+        <div><strong>{{ order_summary.total }}</strong><span>すべて</span></div>
+      </div>
+      <a class="mypage-text-link" href="{% url 'market:orders' %}">予約履歴・状況を見る <span aria-hidden="true">→</span></a>
+    </section>
+
+    <section class="mypage-card" aria-labelledby="settings-heading">
+      <div class="mypage-card__heading">
+        <span class="mypage-icon" aria-hidden="true">⚙️</span>
+        <div><p>SETTINGS</p><h2 id="settings-heading">アカウント設定</h2></div>
+      </div>
+      <nav class="mypage-action-list" aria-label="アカウント設定">
+        <a href="{% url 'accounts:mypage_edit' %}"><span>ユーザー情報変更<small>お名前・フリガナ・メールアドレス</small></span><b aria-hidden="true">›</b></a>
+        <a href="{% url 'accounts:mypage_password' %}"><span>パスワード変更<small>現在のパスワードを確認して変更</small></span><b aria-hidden="true">›</b></a>
+        <span class="mypage-action-list__disabled" aria-disabled="true"><span>通知設定<small>通知機能は現在準備中です</small></span><em>準備中</em></span>
+      </nav>
+    </section>
+
+    <section class="mypage-card mypage-card--danger" aria-labelledby="withdrawal-heading">
+      <div class="mypage-card__heading">
+        <span class="mypage-icon mypage-icon--danger" aria-hidden="true">!</span>
+        <div><p>ACCOUNT STATUS</p><h2 id="withdrawal-heading">退会について</h2></div>
+      </div>
+      <p>退会後はログインできなくなります。予約履歴などの取引記録は安全のため保持されます。</p>
+      <a class="mypage-text-link mypage-text-link--danger" href="{% url 'accounts:mypage_delete' %}">退会手続きへ <span aria-hidden="true">→</span></a>
+    </section>
+  </div>
+</main>
+{% endblock %}

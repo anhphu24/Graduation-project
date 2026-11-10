@@ -8,6 +8,7 @@
     <span class="customer-empty-icon" aria-hidden="true">👋</span>
     <p class="customer-eyebrow">SIGNED OUT</p>
     <h1 id="logout-title">ログアウトしました</h1>
+    {% for message in messages %}<p role="status">{{ message }}</p>{% endfor %}
     <p>ご利用ありがとうございました。またのお越しをお待ちしています。</p>
     <a href="{% url 'accounts:customer_login' %}" class="customer-button">ログイン画面へ</a>
   </section>

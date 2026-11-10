@@ -441,6 +441,54 @@ a:hover {
   display: none;
 }
 
+.form-errors {
+  margin: 8px 0 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fff0ec;
+  color: #9b3b2b;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.form-errors ul,
+.password-help ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.password-help {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.auth-notice {
+  margin: 20px 0 24px;
+  padding: 16px 18px;
+  border: 1px solid #cfe1d6;
+  border-radius: 13px;
+  background: #edf6f0;
+  color: #405b50;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.auth-notice p {
+  margin: 0;
+}
+
+.auth-notice p + p {
+  margin-top: 10px;
+}
+
+.auth-notice--warning {
+  border-color: #f0d5cb;
+  background: #fff5f1;
+  color: #7c4539;
+}
+
 /* ── Intro / Entry grid ── */
 .intro-panel {
   max-width: 760px;

@@ -1,0 +1,35 @@
+{% extends 'customer_base.html' %}
+{% load static %}
+
+{% block title %}退会手続き｜食品ロス削減{% endblock %}
+{% block customer_extra_css %}<link rel="stylesheet" href="{% static 'css/mypage.css' %}?v=mypage-1">{% endblock %}
+{% block customer_extra_js %}<script defer src="{% static 'js/mypage.js' %}?v=mypage-1"></script>{% endblock %}
+
+{% block page_content %}
+<main class="mypage-main mypage-main--form">
+  <a class="mypage-back" href="{% url 'accounts:mypage' %}">← マイページに戻る</a>
+  <section class="mypage-form-card mypage-form-card--danger" aria-labelledby="delete-heading">
+    <span class="mypage-warning-icon" aria-hidden="true">!</span>
+    <p class="mypage-kicker">WITHDRAWAL</p>
+    <h1 id="delete-heading">退会手続き</h1>
+    <div class="mypage-warning">
+      <h2>退会前にご確認ください</h2>
+      <ul>
+        <li>退会後は、このアカウントでログインできません。</li>
+        <li>受取前の予約がある場合は退会できません。</li>
+        <li>予約・受取などの取引記録は削除されません。</li>
+        <li>この手続きはアカウントを無効化します。個人情報の完全削除は行いません。</li>
+      </ul>
+    </div>
+    <form method="post" data-disable-on-submit novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="mypage-form-errors">{{ form.non_field_errors }}</div>{% endif %}
+      {% include 'accounts/customer/mypage/_field.html' with field=form.password %}
+      <div class="mypage-form-actions">
+        <a class="mypage-button mypage-button--secondary" href="{% url 'accounts:mypage' %}">退会しない</a>
+        <button class="mypage-button mypage-button--danger" type="submit" data-submitting-label="処理中…">退会する</button>
+      </div>
+    </form>
+  </section>
+</main>
+{% endblock %}

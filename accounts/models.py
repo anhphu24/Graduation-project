@@ -51,3 +51,15 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.user.username
+
+
+class PasswordResetThrottle(models.Model):
+    """Fixed-window counters keyed by an HMAC of an IP address or email."""
+
+    key_hash = models.CharField(max_length=64, unique=True)
+    window_started_at = models.DateTimeField()
+    attempt_count = models.PositiveIntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True, db_index=True)
+
+    def __str__(self):
+        return f'{self.key_hash[:12]}… / {self.attempt_count}'

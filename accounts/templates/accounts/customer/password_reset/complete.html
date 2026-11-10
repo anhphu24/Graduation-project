@@ -1,0 +1,30 @@
+{% extends 'customer_auth_base.html' %}
+
+{% block title %}パスワード変更完了｜食品ロス削減アプリ{% endblock %}
+
+{% block extra_head %}
+  <meta name="referrer" content="no-referrer">
+{% endblock %}
+
+{% block page_content %}
+<main class="page">
+  <section class="hero">
+    <span class="tag">🌿 FOOD RESCUE</span>
+    <h1>パスワードを<br><em>変更しました。</em></h1>
+    <p>新しいパスワードでFood Rescueをご利用いただけます。</p>
+    <div class="illustration" aria-hidden="true">
+      <div class="blob"></div>
+      <span class="leaf one">🌿</span><span class="food">✅</span><span class="leaf two">🍃</span>
+    </div>
+  </section>
+
+  <section class="auth-card" aria-labelledby="complete-title">
+    <h2 id="complete-title">パスワード変更完了</h2>
+    <div class="auth-notice">
+      <p>パスワードを安全に変更しました。</p>
+      <p>新しいパスワードを使ってログインしてください。</p>
+    </div>
+    <a class="btn" href="{% url 'accounts:customer_login' %}">ログイン画面へ</a>
+  </section>
+</main>
+{% endblock %}

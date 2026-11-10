@@ -1,0 +1,509 @@
+.mypage-main {
+  width: min(1120px, calc(100% - 40px));
+  min-height: 65vh;
+  margin: 0 auto;
+  padding: 44px 0 72px;
+}
+
+.mypage-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+  padding: 34px 38px;
+  border-radius: var(--fr-radius-lg);
+  background: linear-gradient(135deg, var(--fr-green), var(--fr-green-dark));
+  color: #fff;
+  box-shadow: var(--fr-shadow-md);
+}
+
+.mypage-hero h1,
+.mypage-form-card h1 {
+  margin: 5px 0 10px;
+  font-size: clamp(28px, 4vw, 38px);
+  line-height: 1.3;
+}
+
+.mypage-hero p:not(.mypage-kicker) {
+  margin: 0;
+  color: #e3f4eb;
+  line-height: 1.8;
+}
+
+.mypage-kicker {
+  margin: 0;
+  color: #bdeccf;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+}
+
+.mypage-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.mypage-card,
+.mypage-form-card {
+  min-width: 0;
+  padding: 30px;
+  border: 1px solid var(--fr-line);
+  border-radius: var(--fr-radius-lg);
+  background: var(--fr-surface);
+  box-shadow: var(--fr-shadow-sm);
+}
+
+.mypage-card__heading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.mypage-card__heading p {
+  margin: 0 0 3px;
+  color: var(--fr-coral);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+}
+
+.mypage-card__heading h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.mypage-icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: var(--fr-mint);
+  font-size: 22px;
+}
+
+.mypage-profile-list {
+  margin: 0;
+}
+
+.mypage-profile-list div {
+  display: grid;
+  grid-template-columns: 125px minmax(0, 1fr);
+  gap: 16px;
+  padding: 13px 0;
+  border-top: 1px solid var(--fr-line);
+}
+
+.mypage-profile-list dt {
+  color: var(--fr-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.mypage-profile-list dd {
+  min-width: 0;
+  margin: 0;
+  font-weight: 700;
+}
+
+.mypage-break {
+  overflow-wrap: anywhere;
+}
+
+.mypage-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.mypage-stats div {
+  padding: 16px 8px;
+  border-radius: var(--fr-radius-md);
+  background: var(--fr-mint);
+  text-align: center;
+}
+
+.mypage-stats strong,
+.mypage-stats span {
+  display: block;
+}
+
+.mypage-stats strong {
+  color: var(--fr-green-dark);
+  font-size: 24px;
+}
+
+.mypage-stats span {
+  margin-top: 3px;
+  color: var(--fr-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.mypage-action-list {
+  display: grid;
+  gap: 9px;
+}
+
+.mypage-action-list a,
+.mypage-action-list__disabled {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: 0;
+  padding: 14px 15px;
+  border: 1px solid var(--fr-line);
+  border-radius: var(--fr-radius-md);
+  color: var(--fr-ink);
+  font-weight: 800;
+}
+
+.mypage-action-list a:hover {
+  border-color: #b8d8c7;
+  background: var(--fr-mint);
+  color: var(--fr-green-dark);
+}
+
+.mypage-action-list small {
+  display: block;
+  margin-top: 3px;
+  color: var(--fr-muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.mypage-action-list b {
+  color: var(--fr-green);
+  font-size: 24px;
+}
+
+.mypage-action-list__disabled {
+  background: #f6f7f5;
+  color: #748078;
+}
+
+.mypage-action-list__disabled em {
+  flex: 0 0 auto;
+  padding: 4px 8px;
+  border-radius: 99px;
+  background: #e8ebe8;
+  color: #68746c;
+  font-size: 10px;
+  font-style: normal;
+}
+
+.mypage-card--danger {
+  border-color: #efd8d3;
+}
+
+.mypage-card--danger > p {
+  color: var(--fr-muted);
+  line-height: 1.8;
+}
+
+.mypage-icon--danger {
+  background: #fff0ed;
+  color: #98463c;
+  font-weight: 900;
+}
+
+.mypage-text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--fr-green);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.mypage-text-link:hover {
+  color: var(--fr-green-dark);
+  text-decoration: underline;
+}
+
+.mypage-text-link--danger {
+  color: #98463c;
+}
+
+.mypage-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 20px;
+  border: 1px solid var(--fr-green);
+  border-radius: var(--fr-radius-sm);
+  background: var(--fr-green);
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.mypage-button:hover {
+  background: var(--fr-green-dark);
+  color: #fff;
+}
+
+.mypage-button--secondary {
+  border-color: var(--fr-line);
+  background: var(--fr-surface);
+  color: var(--fr-green-dark);
+}
+
+.mypage-button--secondary:hover {
+  border-color: #b8d8c7;
+  background: var(--fr-mint);
+  color: var(--fr-green-dark);
+}
+
+.mypage-button--danger {
+  border-color: #a24c42;
+  background: #a24c42;
+}
+
+.mypage-button--danger:hover {
+  background: #843b34;
+}
+
+.mypage-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.mypage-button:focus-visible,
+.mypage-action-list a:focus-visible,
+.mypage-text-link:focus-visible,
+.mypage-back:focus-visible,
+.mypage-input:focus-visible {
+  outline: 3px solid #8bcdb2;
+  outline-offset: 3px;
+}
+
+.mypage-main--form {
+  width: min(780px, calc(100% - 40px));
+}
+
+.mypage-back {
+  display: inline-flex;
+  margin-bottom: 18px;
+  color: var(--fr-green-dark);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.mypage-form-card h1 {
+  color: var(--fr-ink);
+}
+
+.mypage-lead {
+  margin: 0 0 28px;
+  color: var(--fr-muted);
+  line-height: 1.8;
+}
+
+.mypage-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.mypage-form-grid__wide {
+  grid-column: 1 / -1;
+}
+
+.mypage-field {
+  margin-bottom: 20px;
+}
+
+.mypage-form-grid .mypage-field {
+  margin-bottom: 0;
+}
+
+.mypage-field label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--fr-ink);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.mypage-input {
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 13px;
+  border: 1px solid #cfdcd5;
+  border-radius: var(--fr-radius-sm);
+  background: #fff;
+  color: var(--fr-ink);
+}
+
+.mypage-input:focus {
+  border-color: var(--fr-green);
+}
+
+.mypage-field--error .mypage-input {
+  border-color: #b85b50;
+  background: #fffafa;
+}
+
+.mypage-help {
+  margin-top: 7px;
+  color: var(--fr-muted);
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+.mypage-help ul {
+  margin: 6px 0 0;
+  padding-left: 20px;
+}
+
+.mypage-error,
+.mypage-form-errors,
+.mypage-form-errors ul {
+  color: #98463c;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.mypage-error {
+  margin: 6px 0 0;
+}
+
+.mypage-form-errors {
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border: 1px solid #efd0ca;
+  border-radius: var(--fr-radius-sm);
+  background: #fff0ed;
+}
+
+.mypage-form-errors ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.mypage-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.mypage-messages {
+  margin-bottom: 18px;
+}
+
+.mypage-message {
+  margin: 0;
+  padding: 13px 16px;
+  border: 1px solid #b9dcc9;
+  border-radius: var(--fr-radius-sm);
+  background: #e9f7ee;
+  color: var(--fr-green-dark);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.mypage-form-card--danger {
+  border-color: #efd8d3;
+}
+
+.mypage-warning-icon {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  margin-bottom: 20px;
+  border-radius: 17px;
+  background: #fff0ed;
+  color: #98463c;
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.mypage-warning {
+  margin: 24px 0;
+  padding: 18px 20px;
+  border-radius: var(--fr-radius-md);
+  background: #fff6f3;
+}
+
+.mypage-warning h2 {
+  margin: 0 0 10px;
+  color: #7e3d35;
+  font-size: 16px;
+}
+
+.mypage-warning ul {
+  margin: 0;
+  padding-left: 21px;
+  color: #695854;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+@media (max-width: 760px) {
+  .mypage-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mypage-hero {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 28px;
+  }
+
+  .mypage-form-card,
+  .mypage-card {
+    padding: 24px;
+  }
+}
+
+@media (max-width: 520px) {
+  .mypage-main,
+  .mypage-main--form {
+    width: calc(100% - 28px);
+    padding: 28px 0 48px;
+  }
+
+  .mypage-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mypage-form-grid__wide {
+    grid-column: auto;
+  }
+
+  .mypage-profile-list div {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  .mypage-form-actions {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+
+  .mypage-form-actions .mypage-button {
+    width: 100%;
+  }
+
+  .mypage-action-list a,
+  .mypage-action-list__disabled {
+    align-items: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mypage-button,
+  .mypage-action-list a {
+    transition: none;
+  }
+}
