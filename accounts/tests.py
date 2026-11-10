@@ -522,24 +522,132 @@ class CustomerPasswordResetTests(TestCase):
                 self.assertFalse(response.context['validlink'])
                 self.assertContains(response, 'リンクを利用できません')
 
-    def test_reset_request_requires_csrf(self):
+    @override_settings(
+        ALLOWED_HOSTS=['foodrescue.duckdns.org'],
+        CSRF_TRUSTED_ORIGINS=['https://foodrescue.duckdns.org'],
+    )
+    def test_reset_request_enforces_csrf_for_https(self):
         client = Client(enforce_csrf_checks=True)
-        page = client.get(reverse('accounts:customer_forgot'))
+        forgot_url = reverse('accounts:customer_forgot')
+        request_meta = {
+            'secure': True,
+            'HTTP_HOST': 'foodrescue.duckdns.org',
+        }
+        page = client.get(forgot_url, **request_meta)
+        csrf_token = page.cookies['csrftoken'].value
 
-        denied = client.post(
-            reverse('accounts:customer_forgot'),
+        missing = client.post(
+            forgot_url,
             {'email': self.customer.email},
+            **request_meta,
+        )
+        invalid = client.post(
+            forgot_url,
+            {
+                'email': self.customer.email,
+                'csrfmiddlewaretoken': 'invalid-csrf-token',
+            },
+            HTTP_REFERER='https://foodrescue.duckdns.org' + forgot_url,
+            **request_meta,
+        )
+        missing_referer = client.post(
+            forgot_url,
+            {
+                'email': self.customer.email,
+                'csrfmiddlewaretoken': csrf_token,
+            },
+            **request_meta,
+        )
+        origin_allowed = client.post(
+            forgot_url,
+            {
+                'email': self.customer.email,
+                'csrfmiddlewaretoken': csrf_token,
+            },
+            HTTP_ORIGIN='https://foodrescue.duckdns.org',
+            **request_meta,
         )
         allowed = client.post(
-            reverse('accounts:customer_forgot'),
-            {'email': self.customer.email},
-            HTTP_X_CSRFTOKEN=page.cookies['csrftoken'].value,
+            forgot_url,
+            {
+                'email': self.customer.email,
+                'csrfmiddlewaretoken': csrf_token,
+            },
+            HTTP_REFERER='https://foodrescue.duckdns.org' + forgot_url,
+            **request_meta,
         )
 
-        self.assertEqual(denied.status_code, 403)
+        self.assertEqual(page.status_code, 200)
+        self.assertEqual(missing.status_code, 403)
+        self.assertEqual(invalid.status_code, 403)
+        self.assertEqual(missing_referer.status_code, 403)
+        self.assertRedirects(
+            origin_allowed,
+            reverse('accounts:customer_password_reset_done'),
+        )
         self.assertRedirects(
             allowed,
             reverse('accounts:customer_password_reset_done'),
+        )
+
+    @override_settings(
+        ALLOWED_HOSTS=['foodrescue.duckdns.org'],
+        CSRF_TRUSTED_ORIGINS=['https://foodrescue.duckdns.org'],
+    )
+    def test_password_reset_confirm_accepts_https_post_with_csrf(self):
+        client = Client(enforce_csrf_checks=True)
+        forgot_url = reverse('accounts:customer_forgot')
+        request_meta = {
+            'secure': True,
+            'HTTP_HOST': 'foodrescue.duckdns.org',
+        }
+        page = client.get(forgot_url, **request_meta)
+        response = client.post(
+            forgot_url,
+            {
+                'email': self.customer.email,
+                'csrfmiddlewaretoken': page.cookies['csrftoken'].value,
+            },
+            HTTP_REFERER='https://foodrescue.duckdns.org' + forgot_url,
+            **request_meta,
+        )
+        self.assertRedirects(
+            response,
+            reverse('accounts:customer_password_reset_done'),
+        )
+
+        token_path = self.reset_path_from_email()
+        token = token_path.rstrip('/').rsplit('/', 1)[-1]
+        token_response = client.get(token_path, **request_meta)
+        self.assertEqual(token_response.status_code, 302)
+        self.assertNotIn(token, token_response.url)
+        self.assertEqual(
+            token_response.headers['Referrer-Policy'],
+            'same-origin',
+        )
+
+        form_path = token_response.url
+        form_page = client.get(form_path, **request_meta)
+        self.assertEqual(form_page.status_code, 200)
+        self.assertContains(
+            form_page,
+            '<meta name="referrer" content="same-origin">',
+            html=True,
+        )
+        changed = client.post(
+            form_path,
+            {
+                'new_password1': self.new_password,
+                'new_password2': self.new_password,
+                'csrfmiddlewaretoken': form_page.cookies['csrftoken'].value,
+            },
+            HTTP_REFERER='https://foodrescue.duckdns.org' + form_path,
+            **request_meta,
+        )
+
+        self.assertRedirects(
+            changed,
+            reverse('accounts:customer_password_reset_complete'),
         )
 
     def test_valid_token_changes_password_and_allows_new_login(self):
@@ -678,7 +786,7 @@ class CustomerPasswordResetTests(TestCase):
         self.assertNotIn('provider timeout', joined_logs)
         self.assertEqual(len(mail.outbox), 0)
 
-    def test_reset_pages_disable_referrer_and_browser_cache(self):
+    def test_reset_pages_use_same_origin_referrer_and_disable_browser_cache(self):
         for url in (
             reverse('accounts:customer_forgot'),
             reverse('accounts:customer_password_reset_done'),
@@ -686,8 +794,28 @@ class CustomerPasswordResetTests(TestCase):
         ):
             with self.subTest(url=url):
                 response = self.client.get(url)
-                self.assertEqual(response.headers['Referrer-Policy'], 'no-referrer')
+                self.assertEqual(response.headers['Referrer-Policy'], 'same-origin')
                 self.assertEqual(response.headers['Cache-Control'], 'no-store, max-age=0')
+
+        for url in (
+            reverse('accounts:customer_forgot'),
+            reverse(
+                'accounts:customer_password_reset_confirm',
+                kwargs={'uidb64': 'invalid', 'token': 'invalid'},
+            ),
+        ):
+            with self.subTest(meta=url):
+                response = self.client.get(url)
+                self.assertContains(
+                    response,
+                    '<meta name="referrer" content="same-origin">',
+                    html=True,
+                )
+                self.assertNotContains(
+                    response,
+                    '<meta name="referrer" content="no-referrer">',
+                    html=True,
+                )
 
 
 class PasswordResetConfigurationCheckTests(TestCase):
