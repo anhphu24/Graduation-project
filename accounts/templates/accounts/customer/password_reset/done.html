@@ -1,0 +1,30 @@
+{% extends 'customer_auth_base.html' %}
+
+{% block title %}メール送信受付｜食品ロス削減アプリ{% endblock %}
+
+{% block extra_head %}
+  <meta name="referrer" content="no-referrer">
+{% endblock %}
+
+{% block page_content %}
+<main class="page">
+  <section class="hero">
+    <span class="tag">🌿 FOOD RESCUE</span>
+    <h1>メールを<br><em>ご確認ください。</em></h1>
+    <p>安全のため、入力されたメールアドレスが登録済みかどうかは画面に表示しません。</p>
+    <div class="illustration" aria-hidden="true">
+      <div class="blob"></div>
+      <span class="leaf one">🌿</span><span class="food">📨</span><span class="leaf two">🍃</span>
+    </div>
+  </section>
+
+  <section class="auth-card" aria-labelledby="done-title">
+    <h2 id="done-title">メール送信を受け付けました</h2>
+    <div class="auth-notice">
+      <p>入力されたメールアドレスに対応する利用者アカウントがある場合、パスワード再設定用のメールをお送りします。</p>
+      <p>メールが届かない場合は、迷惑メールフォルダーや入力内容をご確認のうえ、しばらく時間をおいてお試しください。</p>
+    </div>
+    <p class="footnote"><a href="{% url 'accounts:customer_login' %}">ログイン画面に戻る</a></p>
+  </section>
+</main>
+{% endblock %}

@@ -23,13 +23,24 @@
       {% if namespace == 'reservations' and url_name == 'cart' %}aria-current="page"{% endif %}
     ><span aria-hidden="true">🛒</span> カート</a>
     <a
-      class="customer-nav__link{% if namespace == 'accounts' and url_name == 'mypage' %} is-active{% endif %}"
+      class="customer-nav__link{% if namespace == 'accounts' and url_name == 'mypage' or namespace == 'accounts' and url_name == 'mypage_edit' or namespace == 'accounts' and url_name == 'mypage_password' or namespace == 'accounts' and url_name == 'mypage_delete' %} is-active{% endif %}"
       href="{% url 'accounts:mypage' %}"
-      {% if namespace == 'accounts' and url_name == 'mypage' %}aria-current="page"{% endif %}
+      {% if namespace == 'accounts' and url_name == 'mypage' or namespace == 'accounts' and url_name == 'mypage_edit' or namespace == 'accounts' and url_name == 'mypage_password' or namespace == 'accounts' and url_name == 'mypage_delete' %}aria-current="page"{% endif %}
     >マイページ</a>
     <form method="post" action="{% url 'accounts:customer_logout' %}" class="customer-nav__form">
       {% csrf_token %}
-      <button type="submit" class="customer-nav__link customer-nav__logout">ログアウト</button>
+      <button type="submit" class="customer-nav__link customer-nav__logout">
+        <svg
+          class="customer-nav__logout-icon"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path d="M10 5H6.5A1.5 1.5 0 0 0 5 6.5v11A1.5 1.5 0 0 0 6.5 19H10" />
+          <path d="M14 8l4 4-4 4M18 12H9" />
+        </svg>
+        <span>ログアウト</span>
+      </button>
     </form>
   {% else %}
     <a

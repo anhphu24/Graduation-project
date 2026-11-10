@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'anymail',
     'core',
     'accounts',
     'products',
@@ -90,6 +91,41 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Password reset email. Development writes messages to the console. Production
+# uses Resend's HTTPS API and must provide RESEND_API_KEY through the service
+# environment. CI explicitly selects Django's locmem backend.
+EMAIL_BACKEND = os.environ.get(
+    'DJANGO_EMAIL_BACKEND',
+    (
+        'django.core.mail.backends.console.EmailBackend'
+        if DEBUG
+        else 'anymail.backends.resend.EmailBackend'
+    ),
+)
+ANYMAIL = {
+    'RESEND_API_KEY': os.environ.get('RESEND_API_KEY', ''),
+    'REQUESTS_TIMEOUT': (5, 15),
+}
+DEFAULT_FROM_EMAIL = os.environ.get(
+    'DEFAULT_FROM_EMAIL',
+    'Food Rescue <noreply@notify.phule.dev>',
+)
+PASSWORD_RESET_TIMEOUT = 1800
+PASSWORD_RESET_DOMAIN = os.environ.get(
+    'PASSWORD_RESET_DOMAIN',
+    'localhost:8000' if DEBUG else 'foodrescue.duckdns.org',
+)
+PASSWORD_RESET_USE_HTTPS = env_bool('PASSWORD_RESET_USE_HTTPS', not DEBUG)
+PASSWORD_RESET_RATE_LIMIT_WINDOW = int(
+    os.environ.get('PASSWORD_RESET_RATE_LIMIT_WINDOW', '900')
+)
+PASSWORD_RESET_IP_LIMIT = int(os.environ.get('PASSWORD_RESET_IP_LIMIT', '10'))
+PASSWORD_RESET_EMAIL_LIMIT = int(os.environ.get('PASSWORD_RESET_EMAIL_LIMIT', '3'))
+PASSWORD_RESET_TRUSTED_PROXY_IPS = env_list(
+    'PASSWORD_RESET_TRUSTED_PROXY_IPS',
+    '127.0.0.1,::1',
+)
 
 # Production security values are opt-in so local development remains unchanged.
 # The deployment script runs ``check --deploy --fail-level WARNING`` and refuses

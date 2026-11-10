@@ -1,0 +1,6 @@
+<div class="mypage-field{% if field.errors %} mypage-field--error{% endif %}">
+  <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+  {{ field }}
+  {% if field.help_text %}<div class="mypage-help">{{ field.help_text|safe }}</div>{% endif %}
+  {% for error in field.errors %}<p class="mypage-error">{{ error }}</p>{% endfor %}
+</div>

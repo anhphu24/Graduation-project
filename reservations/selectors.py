@@ -1,4 +1,4 @@
-from django.db.models import DecimalField, ExpressionWrapper, F, Sum
+from django.db.models import Count, DecimalField, ExpressionWrapper, F, Q, Sum
 
 from stores.permissions import branches_for_user
 
@@ -8,6 +8,14 @@ from .models import Order
 def orders_for_customer(customer):
     return Order.objects.filter(customer=customer).select_related(
         "lot", "lot__product", "lot__branch", "lot__branch__chain"
+    )
+
+
+def order_summary_for_customer(customer):
+    return Order.objects.filter(customer=customer).aggregate(
+        total=Count('pk'),
+        reserved=Count('pk', filter=Q(status=Order.Status.RESERVED)),
+        collected=Count('pk', filter=Q(status=Order.Status.COLLECTED)),
     )
 
 

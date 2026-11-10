@@ -1,45 +1,45 @@
 {% extends 'customer_auth_base.html' %}
 
-{% load static %}
-
 {% block title %}パスワード再設定｜食品ロス削減アプリ{% endblock %}
+
+{% block extra_head %}
+  <meta name="referrer" content="no-referrer">
+{% endblock %}
 
 {% block page_content %}
 <main class="page">
-      <section class="hero">
-        <span class="tag">🌿 FOOD RESCUE</span>
-        <h1>まだおいしいを、<br /><em>もっと身近に。</em></h1>
-        <p>
-          おトクに選んで、おいしく楽しむ。毎日の小さな選択が、食品ロスを減らす一歩に。
-        </p>
-        <div class="illustration" aria-hidden="true">
-          <div class="blob"></div>
-          <span class="leaf one">🌿</span><span class="food">✉️</span
-          ><span class="leaf two">🍃</span>
-        </div>
-      </section>
-      <section class="auth-card">
-        <h2>パスワードの再設定</h2>
-        <p class="subtitle">
-          ご登録のメールアドレスに再設定用リンクをお送りします。
-        </p>
-        <form data-demo>
-          <div class="field">
-            <label for="email">登録済みメールアドレス</label
-            ><input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="example@email.com"
-              required
-            />
-          </div>
-          <button type="submit" class="btn">
-            再設定用リンクを送信 <span aria-hidden="true">→</span>
-          </button>
-          <p class="message" role="status" aria-live="polite"></p>
-        </form>
-        <p class="footnote"><a href="{% url 'accounts:customer_login' %}">← ログイン画面に戻る</a></p>
-      </section>
-    </main>
+  <section class="hero">
+    <span class="tag">🌿 FOOD RESCUE</span>
+    <h1>もう一度、<br><em>安心して使えるように。</em></h1>
+    <p>登録済みのメールアドレスへ、パスワード再設定用のリンクをお送りします。</p>
+    <div class="illustration" aria-hidden="true">
+      <div class="blob"></div>
+      <span class="leaf one">🌿</span><span class="food">✉️</span><span class="leaf two">🍃</span>
+    </div>
+  </section>
+
+  <section class="auth-card" aria-labelledby="reset-title">
+    <h2 id="reset-title">パスワード再設定</h2>
+    <p class="subtitle">
+      登録済みのメールアドレスを入力してください。該当するアカウントがある場合、再設定用リンクをお送りします。
+    </p>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="form-errors" role="alert">{{ form.non_field_errors }}</div>
+      {% endif %}
+      <div class="field">
+        <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+        {{ form.email }}
+        {% if form.email.errors %}
+          <div class="form-errors" role="alert">{{ form.email.errors }}</div>
+        {% endif %}
+      </div>
+      <button type="submit" class="btn">
+        再設定用リンクを送信 <span aria-hidden="true">→</span>
+      </button>
+    </form>
+    <p class="footnote"><a href="{% url 'accounts:customer_login' %}">← ログイン画面に戻る</a></p>
+  </section>
+</main>
 {% endblock %}

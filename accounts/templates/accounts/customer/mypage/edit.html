@@ -1,0 +1,32 @@
+{% extends 'customer_base.html' %}
+{% load static %}
+
+{% block title %}ユーザー情報変更｜食品ロス削減{% endblock %}
+{% block customer_extra_css %}<link rel="stylesheet" href="{% static 'css/mypage.css' %}?v=mypage-1">{% endblock %}
+{% block customer_extra_js %}<script defer src="{% static 'js/mypage.js' %}?v=mypage-1"></script>{% endblock %}
+
+{% block page_content %}
+<main class="mypage-main mypage-main--form">
+  <a class="mypage-back" href="{% url 'accounts:mypage' %}">← マイページに戻る</a>
+  <section class="mypage-form-card" aria-labelledby="edit-heading">
+    <p class="mypage-kicker">PROFILE</p>
+    <h1 id="edit-heading">ユーザー情報変更</h1>
+    <p class="mypage-lead">登録しているお名前、フリガナ、メールアドレスを変更できます。</p>
+    <form method="post" data-disable-on-submit novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="mypage-form-errors">{{ form.non_field_errors }}</div>{% endif %}
+      <div class="mypage-form-grid">
+        {% include 'accounts/customer/mypage/_field.html' with field=form.family %}
+        {% include 'accounts/customer/mypage/_field.html' with field=form.given %}
+        {% include 'accounts/customer/mypage/_field.html' with field=form.family_kana %}
+        {% include 'accounts/customer/mypage/_field.html' with field=form.given_kana %}
+        <div class="mypage-form-grid__wide">{% include 'accounts/customer/mypage/_field.html' with field=form.email %}</div>
+      </div>
+      <div class="mypage-form-actions">
+        <a class="mypage-button mypage-button--secondary" href="{% url 'accounts:mypage' %}">キャンセル</a>
+        <button class="mypage-button" type="submit" data-submitting-label="更新中…">変更を保存</button>
+      </div>
+    </form>
+  </section>
+</main>
+{% endblock %}

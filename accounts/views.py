@@ -1,15 +1,44 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth import get_user_model
-from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import (
+    authenticate,
+    get_user_model,
+    login as auth_login,
+    logout as auth_logout,
+    update_session_auth_hash,
+)
+from django.contrib.auth.views import (
+    PasswordResetCompleteView,
+    PasswordResetConfirmView,
+    PasswordResetDoneView,
+    PasswordResetView,
+)
+from django.core.exceptions import ValidationError
 from django.db import transaction, IntegrityError
+from django.shortcuts import redirect, render
+from django.urls import reverse_lazy
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.http import require_http_methods, require_POST
 
-from .forms import CustomerSignupForm, CustomerLoginForm
-from django.shortcuts import render, redirect
-from django.views.decorators.http import require_http_methods
+from reservations.selectors import order_summary_for_customer
+
+from .decorators import customer_required
+from .forms import (
+    CustomerAccountDeactivationForm,
+    CustomerLoginForm,
+    CustomerPasswordChangeForm,
+    CustomerPasswordResetForm,
+    CustomerProfileForm,
+    CustomerSetPasswordForm,
+    CustomerSignupForm,
+)
 from .models import Profile
-
-
+from .services import (
+    consume_password_reset_attempt,
+    deactivate_customer_account,
+    password_reset_client_ip,
+    update_customer_profile,
+)
 
 User = get_user_model()
 
@@ -160,20 +189,78 @@ def customer_login(request):
     )
 
 
-# ==============================
-# 一般利用者：パスワード再設定
-# ==============================
-
-def customer_forgot(request):
-    return render(
-        request,
-        'accounts/customer/forgot.html'
-    )
+class PasswordResetSecurityHeadersMixin:
+    def dispatch(self, request, *args, **kwargs):
+        response = super().dispatch(request, *args, **kwargs)
+        response.headers['Referrer-Policy'] = 'no-referrer'
+        response.headers['Cache-Control'] = 'no-store, max-age=0'
+        return response
 
 
-from django.contrib.auth import logout as auth_logout
-from django.shortcuts import render, redirect
-from django.views.decorators.http import require_POST
+class CustomerPasswordResetView(PasswordResetSecurityHeadersMixin, PasswordResetView):
+    template_name = 'accounts/customer/forgot.html'
+    form_class = CustomerPasswordResetForm
+    success_url = reverse_lazy('accounts:customer_password_reset_done')
+    email_template_name = 'accounts/customer/password_reset/email.txt'
+    html_email_template_name = 'accounts/customer/password_reset/email.html'
+    subject_template_name = 'accounts/customer/password_reset/subject.txt'
+    extra_email_context = {
+        'password_reset_timeout_minutes': settings.PASSWORD_RESET_TIMEOUT // 60,
+    }
+
+    def post(self, request, *args, **kwargs):
+        ip_allowed = consume_password_reset_attempt(
+            kind='ip',
+            identifier=password_reset_client_ip(request),
+            limit=settings.PASSWORD_RESET_IP_LIMIT,
+            window_seconds=settings.PASSWORD_RESET_RATE_LIMIT_WINDOW,
+        )
+        if not ip_allowed:
+            return redirect(self.success_url)
+        return super().post(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        email_allowed = consume_password_reset_attempt(
+            kind='email',
+            identifier=form.cleaned_data['email'],
+            limit=settings.PASSWORD_RESET_EMAIL_LIMIT,
+            window_seconds=settings.PASSWORD_RESET_RATE_LIMIT_WINDOW,
+        )
+        if not email_allowed:
+            return redirect(self.success_url)
+        return super().form_valid(form)
+
+
+class CustomerPasswordResetDoneView(
+    PasswordResetSecurityHeadersMixin,
+    PasswordResetDoneView,
+):
+    template_name = 'accounts/customer/password_reset/done.html'
+
+
+class CustomerPasswordResetConfirmView(
+    PasswordResetSecurityHeadersMixin,
+    PasswordResetConfirmView,
+):
+    template_name = 'accounts/customer/password_reset/confirm.html'
+    form_class = CustomerSetPasswordForm
+    success_url = reverse_lazy('accounts:customer_password_reset_complete')
+
+    def get_user(self, uidb64):
+        user = super().get_user(uidb64)
+        profile = getattr(user, 'profile', None) if user is not None else None
+        if user is None or not user.is_active or profile is None:
+            return None
+        if profile.role != 'customer':
+            return None
+        return user
+
+
+class CustomerPasswordResetCompleteView(
+    PasswordResetSecurityHeadersMixin,
+    PasswordResetCompleteView,
+):
+    template_name = 'accounts/customer/password_reset/complete.html'
 
 
 # ログアウト処理
@@ -221,9 +308,77 @@ def shop_forgot(request):
 # マイページ
 # ==============================
 
+@customer_required
 def mypage(request):
     return render(
         request,
-        'core/coming_soon.html',
-        {'heading': 'マイページ'}
+        'accounts/customer/mypage/index.html',
+        {'order_summary': order_summary_for_customer(request.user)},
+    )
+
+
+@customer_required
+@require_http_methods(['GET', 'POST'])
+def mypage_edit(request):
+    form = CustomerProfileForm(
+        request.POST or None,
+        user=request.user,
+    )
+    if request.method == 'POST' and form.is_valid():
+        try:
+            update_customer_profile(user=request.user, **form.cleaned_data)
+        except IntegrityError:
+            form.add_error(
+                'email',
+                'このメールアドレスは既に登録されています。',
+            )
+        else:
+            messages.success(request, 'ユーザー情報を更新しました。')
+            return redirect('accounts:mypage')
+
+    return render(
+        request,
+        'accounts/customer/mypage/edit.html',
+        {'form': form},
+    )
+
+
+@customer_required
+@require_http_methods(['GET', 'POST'])
+def mypage_password(request):
+    form = CustomerPasswordChangeForm(request.user, request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        user = form.save()
+        update_session_auth_hash(request, user)
+        messages.success(request, 'パスワードを変更しました。')
+        return redirect('accounts:mypage')
+
+    return render(
+        request,
+        'accounts/customer/mypage/password.html',
+        {'form': form},
+    )
+
+
+@customer_required
+@require_http_methods(['GET', 'POST'])
+def mypage_delete(request):
+    form = CustomerAccountDeactivationForm(
+        request.POST or None,
+        user=request.user,
+    )
+    if request.method == 'POST' and form.is_valid():
+        try:
+            deactivate_customer_account(user=request.user)
+        except ValidationError as error:
+            form.add_error(None, error)
+        else:
+            auth_logout(request)
+            messages.success(request, '退会手続きが完了しました。')
+            return redirect('accounts:customer_logout_complete')
+
+    return render(
+        request,
+        'accounts/customer/mypage/delete.html',
+        {'form': form},
     )

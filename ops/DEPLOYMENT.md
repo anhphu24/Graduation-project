@@ -111,3 +111,39 @@ For a self-hosted runner, be careful: its host is trusted to execute repository 
 8. Consider resetting `DEPLOY_ENABLED=false` after the initial controlled deployment until ready for automatic deployments.
 
 Do not run any AWS IAM/SSM creation commands for this SSH route. Files under `ops/aws/` and `scripts/ssm_deploy.sh` are retained as historical alternatives but are **not called** by active CI/CD.
+
+## 8. Resend password reset configuration
+
+Create and verify `notify.phule.dev` in Resend, then create a dedicated API key with sending access only. Add the following values to `/etc/food-rescue.env` on EC2. Replace the placeholder directly on the server; never store or print the real key in GitHub Actions or this repository.
+
+```bash
+RESEND_API_KEY='YOUR_RESEND_API_KEY'
+DEFAULT_FROM_EMAIL='Food Rescue <noreply@notify.phule.dev>'
+PASSWORD_RESET_DOMAIN='foodrescue.duckdns.org'
+PASSWORD_RESET_USE_HTTPS='1'
+DJANGO_ALLOWED_HOSTS='foodrescue.duckdns.org'
+DJANGO_CSRF_TRUSTED_ORIGINS='https://foodrescue.duckdns.org'
+DJANGO_SECURE_PROXY_SSL_HEADER='1'
+```
+
+The deployment process sources `/etc/food-rescue.env` for `manage.py check`, migrations and static collection. Gunicorn must also receive the same file through its systemd unit. Check this without displaying environment values:
+
+```bash
+sudo systemctl cat food-rescue
+sudo systemctl show food-rescue --property=EnvironmentFiles --no-pager
+```
+
+The unit should contain this line in its `[Service]` section:
+
+```ini
+EnvironmentFile=/etc/food-rescue.env
+```
+
+If it is absent, add it to a systemd override on EC2, then run `sudo systemctl daemon-reload` and restart the service. Do not print the service environment or the API key while verifying it. Confirm only the service state and the public reset flow:
+
+```bash
+sudo systemctl restart food-rescue
+sudo systemctl is-active food-rescue
+```
+
+Keep `DEPLOY_ENABLED=false` while preparing and testing the configuration. First test delivery with a controlled customer account, verify the HTTPS link points to `foodrescue.duckdns.org`, complete one reset, and confirm that the same link cannot be reused. CI uses Django's in-memory email backend and never contacts Resend.

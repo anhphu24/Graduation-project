@@ -1,0 +1,60 @@
+{% extends 'customer_auth_base.html' %}
+
+{% block title %}新しいパスワードの設定｜食品ロス削減アプリ{% endblock %}
+
+{% block extra_head %}
+  <meta name="referrer" content="no-referrer">
+{% endblock %}
+
+{% block page_content %}
+<main class="page">
+  <section class="hero">
+    <span class="tag">🌿 FOOD RESCUE</span>
+    <h1>新しいパスワードで、<br><em>また始めましょう。</em></h1>
+    <p>安全なパスワードを設定してください。変更後は以前のパスワードではログインできません。</p>
+    <div class="illustration" aria-hidden="true">
+      <div class="blob"></div>
+      <span class="leaf one">🌿</span><span class="food">🔐</span><span class="leaf two">🍃</span>
+    </div>
+  </section>
+
+  <section class="auth-card" aria-labelledby="confirm-title">
+    {% if validlink %}
+      <h2 id="confirm-title">新しいパスワードの設定</h2>
+      <p class="subtitle">確認のため、同じパスワードを2回入力してください。</p>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+          <div class="form-errors" role="alert">{{ form.non_field_errors }}</div>
+        {% endif %}
+        <div class="field">
+          <label for="{{ form.new_password1.id_for_label }}">{{ form.new_password1.label }}</label>
+          {{ form.new_password1 }}
+          {% if form.new_password1.help_text %}
+            <div class="password-help">{{ form.new_password1.help_text|safe }}</div>
+          {% endif %}
+          {% if form.new_password1.errors %}
+            <div class="form-errors" role="alert">{{ form.new_password1.errors }}</div>
+          {% endif %}
+        </div>
+        <div class="field">
+          <label for="{{ form.new_password2.id_for_label }}">{{ form.new_password2.label }}</label>
+          {{ form.new_password2 }}
+          {% if form.new_password2.errors %}
+            <div class="form-errors" role="alert">{{ form.new_password2.errors }}</div>
+          {% endif %}
+        </div>
+        <button type="submit" class="btn">パスワードを変更 <span aria-hidden="true">→</span></button>
+      </form>
+    {% else %}
+      <h2 id="confirm-title">リンクを利用できません</h2>
+      <div class="auth-notice auth-notice--warning" role="alert">
+        <p>この再設定リンクは無効、使用済み、または有効期限切れです。</p>
+        <p>もう一度パスワード再設定をお申し込みください。</p>
+      </div>
+      <a class="btn" href="{% url 'accounts:customer_forgot' %}">再設定をやり直す</a>
+    {% endif %}
+    <p class="footnote"><a href="{% url 'accounts:customer_login' %}">← ログイン画面に戻る</a></p>
+  </section>
+</main>
+{% endblock %}
