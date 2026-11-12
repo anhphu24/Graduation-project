@@ -2,10 +2,13 @@
 
       .entry-wrap {
         min-height: 100vh;
+        min-height: 100dvh;
         display: flex;
         align-items: center;
         justify-content: center;
         padding: 40px 20px;
+        padding-right: max(20px, env(safe-area-inset-right));
+        padding-left: max(20px, env(safe-area-inset-left));
         position: relative;
         overflow: hidden;
       }

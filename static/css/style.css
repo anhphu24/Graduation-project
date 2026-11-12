@@ -1,5 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap");
-
 :root {
   --green: #146c5b;
   --deep: #0f5b4e;
@@ -18,13 +16,14 @@
 
 body {
   margin: 0;
-  font-family: "Noto Sans JP", system-ui, sans-serif;
+  font-family: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic", system-ui, sans-serif;
   color: var(--ink);
   background:
     radial-gradient(ellipse at 10% 12%, #e0efe4 0, transparent 36%),
     radial-gradient(ellipse at 90% 82%, #ffdfd2 0, transparent 33%),
     linear-gradient(140deg, #f7f3e9, #edf4ed 65%, #fff3e9);
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 body.shop {
@@ -48,6 +47,8 @@ a:hover {
   max-width: 1150px;
   margin: auto;
   padding: 24px 28px;
+  padding-right: max(28px, env(safe-area-inset-right));
+  padding-left: max(28px, env(safe-area-inset-left));
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -61,6 +62,12 @@ a:hover {
   color: var(--deep);
   font-weight: 800;
   font-size: 17px;
+}
+
+.brand-subtitle {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
 }
 
 .brand-mark {
@@ -96,7 +103,10 @@ a:hover {
   align-items: center;
   gap: 72px;
   padding: 32px 34px 80px;
+  padding-right: max(34px, env(safe-area-inset-right));
+  padding-left: max(34px, env(safe-area-inset-left));
   min-height: calc(100vh - 90px);
+  min-height: calc(100dvh - 90px);
 }
 
 /* ── Hero ── */
@@ -451,6 +461,26 @@ a:hover {
   line-height: 1.7;
 }
 
+.auth-card.signup .form-errors {
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid #f5b7b1;
+  border-radius: 12px;
+  background-color: #fff0ed;
+  color: #c0392b;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.auth-card.signup .form-errors strong {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.auth-card.signup .form-errors p {
+  margin: 5px 0;
+}
+
 .form-errors ul,
 .password-help ul {
   margin: 0;
@@ -585,6 +615,8 @@ a:hover {
     gap: 12px;
     max-width: 540px;
     padding: 0 18px 50px;
+    padding-right: max(18px, env(safe-area-inset-right));
+    padding-left: max(18px, env(safe-area-inset-left));
   }
 
   .hero {
@@ -640,6 +672,12 @@ a:hover {
 
   .intro-panel h1 {
     font-size: 29px;
+  }
+}
+
+@media (max-width: 570px) {
+  .two {
+    grid-template-columns: 1fr;
   }
 }
 

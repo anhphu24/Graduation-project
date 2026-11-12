@@ -183,7 +183,7 @@ class MarketFlowTests(TestCase):
                 self.assertContains(response, 'class="customer-footer"')
                 self.assertContains(
                     response,
-                    f'href="{static("css/common.css")}?v=customer-ui-2"',
+                    f'href="{static("css/common.css")}"',
                 )
                 self.assertContains(response, "おいしいを、ムダにしない。")
                 self.assertContains(response, "商品を探す")

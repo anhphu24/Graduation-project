@@ -21,6 +21,8 @@ if [[ "$MODE" == "all" || "$MODE" == "django" ]]; then
         cd "$PROJECT_ROOT"
         python manage.py check
         python manage.py makemigrations --check --dry-run
+        python manage.py collectstatic --noinput --clear
+        python scripts/verify_static_manifest.py
         python manage.py test --verbosity 2
     )
 fi
@@ -32,4 +34,5 @@ if [[ "$MODE" == "all" || "$MODE" == "deployment" ]]; then
     bash -n "$PROJECT_ROOT/scripts/tests/test_resolve_deploy_target.sh"
     bash "$PROJECT_ROOT/scripts/tests/test_resolve_deploy_target.sh" "$PROJECT_ROOT"
     python "$PROJECT_ROOT/scripts/tests/test_ssh_security.py" "$PROJECT_ROOT"
+    python "$PROJECT_ROOT/scripts/tests/test_static_manifest.py"
 fi
