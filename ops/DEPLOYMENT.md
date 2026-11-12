@@ -147,3 +147,59 @@ sudo systemctl is-active food-rescue
 ```
 
 Keep `DEPLOY_ENABLED=false` while preparing and testing the configuration. First test delivery with a controlled customer account, verify the HTTPS link points to `foodrescue.duckdns.org`, complete one reset, and confirm that the same link cannot be reused. CI uses Django's in-memory email backend and never contacts Resend.
+
+### Password reset log safety
+
+Password reset links contain a raw `uidb64/token` path on their first request.
+The repository includes an example conditional Nginx access-log policy at
+[`ops/nginx/password-reset-access-log-protection.example.conf`](nginx/password-reset-access-log-protection.example.conf)
+and the staging verification procedure at
+[`ops/PASSWORD_RESET_STAGING_E2E.md`](PASSWORD_RESET_STAGING_E2E.md).
+
+These artifacts are examples and are **not applied to production** by the
+deployment workflow. Integrate them only after reviewing the effective Nginx,
+Gunicorn, systemd, journal, and centralized logging configuration. The Nginx
+condition protects access logs only; it does not redact error logs or upstream
+log sinks. Static validation of the example is not sufficient: it must be
+merged into the effective Nginx `http`/`server` contexts and checked there. A
+Django middleware or logging filter cannot protect logs written by Nginx or
+Gunicorn before the request reaches Django. Production promotion requires
+successful staging evidence, an `nginx -t` of the merged configuration, and a
+separately reviewed deployment change.
+
+## 9. Hashed static assets and Nginx cache policy
+
+Django uses `ManifestStaticFilesStorage`. CI collects into an isolated checkout
+with `--clear`, then `scripts/verify_static_manifest.py` requires hashed mappings
+and collected target files for all project CSS, JavaScript, images, and
+`admin/css/base.css`. Production deploy and automatic rollback collect without
+`--clear` and run the same verifier before restarting the service.
+
+The repository includes an example cache policy at
+[`ops/nginx/static-assets-cache.example.conf`](nginx/static-assets-cache.example.conf).
+It is **NOT APPLIED TO PRODUCTION** by the deployment workflow. Before using it:
+
+1. Inspect the effective configuration with `sudo nginx -T` and confirm that
+   `/static/` maps to the Django `STATIC_ROOT` actually used by the service.
+2. Merge the example into the effective `server` block and confirm the effective
+   `http` or `server` configuration loads `mime.types`.
+3. Run `sudo nginx -t`, reload only after it passes, and test a hashed CSS,
+   JavaScript, image, admin asset, unhashed asset, and missing asset on staging.
+4. Confirm hashed responses have the correct MIME type and one-year immutable
+   caching, unhashed responses do not have a long immutable lifetime, and a
+   missing static path returns 404 without reaching Django.
+5. Retain old hashed files for the rollback and downstream cache grace period.
+   Do not add `collectstatic --clear` to the shared production directory. Use a
+   reviewed retention job or release-specific static directories if cleanup is
+   required.
+
+Automated rollback targets must contain `scripts/verify_static_manifest.py` and
+the Manifest storage configuration. A target older than this migration fails
+closed before restart and requires a separately reviewed transition procedure.
+Also note that `requirements.txt` currently allows a Django version range, so a
+later dependency resolution may not reproduce the exact Django/admin assets of
+an earlier release. No dependency versions were changed by this static rollout.
+
+The example assumes neither the active TLS layout nor an upstream application
+configuration. Its paths and context must be reconciled with `nginx -T` on the
+target host. This repository change does not reload Nginx or modify production.

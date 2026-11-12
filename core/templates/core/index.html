@@ -6,7 +6,10 @@
 
 {% block body_class %}{% endblock %}
 
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/entry.css' %}">{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="stylesheet" href="{% static 'css/entry.css' %}">
+{% endblock %}
 
 {% block body %}
 <main class="entry-wrap">

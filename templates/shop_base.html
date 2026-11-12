@@ -1,6 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block body_class %}shop{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+{% endblock %}
 {% block body %}
   {% include 'includes/header.html' with portal='shop' %}
   {% block page_content %}{% endblock %}

@@ -2,7 +2,7 @@
 {% load static %}
 {% block body_class %}customer customer-page{% endblock %}
 {% block extra_css %}
-  <link rel="stylesheet" href="{% static 'css/common.css' %}?v=customer-ui-2">
+  <link rel="stylesheet" href="{% static 'css/common.css' %}">
   {% block customer_extra_css %}{% endblock %}
 {% endblock %}
 {% block body %}
@@ -11,7 +11,6 @@
   {% include 'includes/footer.html' %}
 {% endblock %}
 {% block extra_js %}
-  <script defer src="{% static 'js/customer_nav.js' %}?v=customer-ui-1"></script>
-  <script defer src="{% static 'js/demo.js' %}"></script>
+  <script defer src="{% static 'js/customer_nav.js' %}"></script>
   {% block customer_extra_js %}{% endblock %}
 {% endblock %}

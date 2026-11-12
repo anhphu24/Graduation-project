@@ -1,24 +1,31 @@
 from datetime import timedelta
 from decimal import Decimal
+import logging
 import re
+import sys
+from types import SimpleNamespace
 import uuid
 from unittest.mock import patch
 
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth import get_user_model
+from django.contrib.auth.views import INTERNAL_RESET_SESSION_TOKEN
+from django.conf import settings
 from django.core import mail
 from django.core.checks import run_checks
 from django.templatetags.static import static
-from django.test import Client, TestCase, override_settings
+from django.test import Client, SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
+from django.utils.log import DEFAULT_LOGGING
 
 from products.models import Lot, Product
 from reservations.models import Order
 from stores.models import Branch, Chain
 
+from .logging import PasswordResetLogFilter
 from .models import PasswordResetThrottle, Profile
 from .services import consume_password_reset_attempt
 
@@ -40,7 +47,7 @@ class AuthenticationLayoutTests(TestCase):
                 self.assertContains(response, 'class="topbar"')
                 self.assertContains(
                     response,
-                    f'href="{static("css/style.css")}?v=global-ui-1"',
+                    f'href="{static("css/style.css")}"',
                 )
                 self.assertNotContains(response, 'class="customer-header"')
                 self.assertNotContains(response, 'class="customer-footer"')
@@ -375,6 +382,259 @@ class CustomerMyPageTests(TestCase):
         self.assertTrue(self.customer.is_active)
 
 
+class PasswordResetLogFilterTests(SimpleTestCase):
+    uidb64 = 'MQ'
+    token = 'd4y8tr-0123456789abcdef0123456789ab'
+    reset_path = (
+        f'/accounts/customer/password-reset/{uidb64}/{token}/'
+    )
+    redacted_path = (
+        '/accounts/customer/password-reset/'
+        '<uid-redacted>/<token-redacted>/'
+    )
+
+    def make_record(self, *, msg, args=(), exc_info=None, request=None):
+        record = logging.LogRecord(
+            name='django.request',
+            level=logging.ERROR,
+            pathname=__file__,
+            lineno=1,
+            msg=msg,
+            args=args,
+            exc_info=exc_info,
+        )
+        if request is not None:
+            record.request = request
+        return record
+
+    def test_logging_configuration_preserves_django_defaults(self):
+        self.assertIsNot(settings.LOGGING, DEFAULT_LOGGING)
+        self.assertNotIn('password_reset_redaction', DEFAULT_LOGGING['filters'])
+        self.assertEqual(
+            set(settings.LOGGING['handlers']),
+            set(DEFAULT_LOGGING['handlers']),
+        )
+        self.assertEqual(
+            set(settings.LOGGING['loggers']),
+            set(DEFAULT_LOGGING['loggers']),
+        )
+        for name, default_handler in DEFAULT_LOGGING['handlers'].items():
+            configured_handler = settings.LOGGING['handlers'][name]
+            for key, value in default_handler.items():
+                if key != 'filters':
+                    self.assertEqual(configured_handler[key], value)
+            self.assertEqual(
+                configured_handler.get('filters', [])[:-1],
+                default_handler.get('filters', []),
+            )
+            self.assertEqual(
+                configured_handler['filters'][-1],
+                'password_reset_redaction',
+            )
+
+    def test_redacts_nested_log_values_exception_and_request_metadata(self):
+        absolute_url = f'https://foodrescue.duckdns.org{self.reset_path}'
+        request = SimpleNamespace(
+            path=self.reset_path,
+            path_info=self.reset_path,
+            META={
+                'PATH_INFO': self.reset_path,
+                'RAW_URI': self.reset_path,
+                'REQUEST_URI': f'{self.reset_path}?source=email',
+                'HTTP_REFERER': absolute_url,
+                'HTTP_X_ORIGINAL_URI': self.reset_path,
+                'HTTP_X_REWRITE_URL': absolute_url,
+                'APP_CONTEXT': {
+                    'original_uri': absolute_url,
+                    'attempt': 7,
+                    'enabled': True,
+                },
+                'UNRELATED': {'path': '/products/42/', 'count': 3},
+            },
+        )
+        original_meta_keys = tuple(request.META)
+        try:
+            raise RuntimeError(f'Failed while handling {absolute_url}')
+        except RuntimeError:
+            exc_info = sys.exc_info()
+        original_error = exc_info[1]
+
+        record = self.make_record(
+            msg=f'Internal Server Error: {self.reset_path} %s %s',
+            args=(
+                {'request_url': absolute_url},
+                ('nested', self.reset_path),
+            ),
+            exc_info=exc_info,
+            request=request,
+        )
+        log_filter = PasswordResetLogFilter()
+
+        self.assertTrue(log_filter.filter(record))
+        first_result = (
+            record.msg,
+            record.args,
+            record.exc_info[1].args,
+            request.path,
+            request.path_info,
+            dict(request.META),
+        )
+        self.assertTrue(log_filter.filter(record))
+        second_result = (
+            record.msg,
+            record.args,
+            record.exc_info[1].args,
+            request.path,
+            request.path_info,
+            dict(request.META),
+        )
+        formatted = logging.Formatter('%(message)s').format(record)
+
+        self.assertEqual(first_result, second_result)
+        self.assertIs(record.exc_info[1], original_error)
+        self.assertIn('RuntimeError', formatted)
+        self.assertNotIn(self.uidb64, formatted)
+        self.assertNotIn(self.token, formatted)
+        self.assertIn(self.redacted_path, formatted)
+        for value in (request.path, request.path_info):
+            self.assertNotIn(self.uidb64, value)
+            self.assertNotIn(self.token, value)
+            self.assertIn(self.redacted_path, value)
+        self.assertEqual(tuple(request.META), original_meta_keys)
+        self.assertNotIn(self.uidb64, repr(request.META))
+        self.assertNotIn(self.token, repr(request.META))
+        self.assertEqual(request.META['APP_CONTEXT']['attempt'], 7)
+        self.assertIs(request.META['APP_CONTEXT']['enabled'], True)
+        self.assertEqual(
+            request.META['UNRELATED'],
+            {'path': '/products/42/', 'count': 3},
+        )
+
+    def test_does_not_change_unrelated_logs_or_set_password_url(self):
+        unrelated_path = '/products/42/'
+        set_password_path = (
+            f'/accounts/customer/password-reset/{self.uidb64}/set-password/'
+        )
+        request = SimpleNamespace(
+            path=unrelated_path,
+            path_info=set_password_path,
+            META={
+                'PATH_INFO': unrelated_path,
+                'HTTP_REFERER': set_password_path,
+            },
+        )
+        try:
+            raise RuntimeError('ordinary application failure')
+        except RuntimeError:
+            exc_info = sys.exc_info()
+
+        record = self.make_record(
+            msg='Internal Server Error: %s',
+            args=({'path': unrelated_path, 'confirm': set_password_path},),
+            exc_info=exc_info,
+            request=request,
+        )
+        original = (
+            record.msg,
+            record.args,
+            record.exc_info[1].args,
+            request.path,
+            request.path_info,
+            dict(request.META),
+        )
+
+        self.assertTrue(PasswordResetLogFilter().filter(record))
+
+        self.assertEqual(
+            (
+                record.msg,
+                record.args,
+                record.exc_info[1].args,
+                request.path,
+                request.path_info,
+                dict(request.META),
+            ),
+            original,
+        )
+
+    def test_read_only_exception_and_request_use_redacted_fallbacks(self):
+        reset_path = self.reset_path
+
+        class ReadOnlyArgsError(RuntimeError):
+            def __setattr__(self, name, value):
+                if name == 'args' and hasattr(self, 'args'):
+                    raise RuntimeError('args are read-only')
+                super().__setattr__(name, value)
+
+        class ReadOnlyRequest:
+            def __init__(self):
+                self._path = reset_path
+                self._meta = {
+                    'PATH_INFO': reset_path,
+                    'RAW_URI': reset_path,
+                    'REQUEST_URI': reset_path,
+                    'HTTP_REFERER': f'https://foodrescue.duckdns.org{reset_path}',
+                    'HTTP_X_ORIGINAL_URI': reset_path,
+                    'HTTP_X_REWRITE_URL': (
+                        f'https://foodrescue.duckdns.org{reset_path}'
+                    ),
+                    'APP_CONTEXT': {
+                        'original_uri': reset_path,
+                        'attempt': 7,
+                    },
+                }
+
+            @property
+            def path(self):
+                return self._path
+
+            @path.setter
+            def path(self, value):
+                raise RuntimeError('path is read-only')
+
+            @property
+            def path_info(self):
+                return self._path
+
+            @property
+            def META(self):
+                return self._meta
+
+            def get_full_path(self, force_append_slash=False):
+                return self._path
+
+            def build_absolute_uri(self, location=None):
+                return f'https://foodrescue.duckdns.org{location or self._path}'
+
+        request = ReadOnlyRequest()
+        try:
+            raise ReadOnlyArgsError(f'Failure at {self.reset_path}')
+        except ReadOnlyArgsError:
+            exc_info = sys.exc_info()
+        original_error = exc_info[1]
+        record = self.make_record(
+            msg=f'Internal Server Error: {self.reset_path}',
+            exc_info=exc_info,
+            request=request,
+        )
+
+        self.assertTrue(PasswordResetLogFilter().filter(record))
+        formatted = logging.Formatter('%(message)s').format(record)
+
+        self.assertIsNot(record.exc_info[1], original_error)
+        self.assertIsInstance(record.exc_info[1], ReadOnlyArgsError)
+        self.assertIn('ReadOnlyArgsError', formatted)
+        self.assertNotIn(self.uidb64, formatted)
+        self.assertNotIn(self.token, formatted)
+        self.assertNotIn(self.uidb64, record.request.get_full_path())
+        self.assertNotIn(self.token, record.request.build_absolute_uri())
+        for value in (record.request.path, record.request.path_info):
+            self.assertIn(self.redacted_path, value)
+        self.assertNotIn(self.uidb64, repr(record.request.META))
+        self.assertNotIn(self.token, repr(record.request.META))
+        self.assertEqual(record.request.META['APP_CONTEXT']['attempt'], 7)
+
+
 @override_settings(
     EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend',
     DEFAULT_FROM_EMAIL='Food Rescue <noreply@notify.phule.dev>',
@@ -430,6 +690,45 @@ class CustomerPasswordResetTests(TestCase):
             {'email': email or self.customer.email},
             **extra,
         )
+
+    @override_settings(
+        DEBUG=False,
+        ADMINS=[('Food Rescue Ops', 'ops@example.com')],
+        EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend',
+    )
+    def test_raw_token_server_error_does_not_leak_to_admin_email(self):
+        uidb64 = 'synthetic-uid'
+        token = 'synthetic-reset-token'
+        reset_path = reverse(
+            'accounts:customer_password_reset_confirm',
+            kwargs={'uidb64': uidb64, 'token': token},
+        )
+        client = Client(raise_request_exception=False)
+
+        with patch(
+            'accounts.views.CustomerPasswordResetConfirmView.get_user',
+            side_effect=RuntimeError('Controlled password-reset failure.'),
+        ):
+            response = client.get(
+                reset_path,
+                HTTP_REFERER=f'https://foodrescue.duckdns.org{reset_path}',
+                HTTP_X_ORIGINAL_URI=reset_path,
+                HTTP_X_REWRITE_URL=f'https://foodrescue.duckdns.org{reset_path}',
+            )
+
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(len(mail.outbox), 1)
+        message = mail.outbox[0]
+        rendered_message = '\n'.join(
+            [
+                message.subject,
+                message.body,
+                *(alternative.content for alternative in message.alternatives),
+            ]
+        )
+        self.assertNotIn(uidb64, rendered_message)
+        self.assertNotIn(token, rendered_message)
+        self.assertIn('RuntimeError', rendered_message)
 
     def reset_path_from_email(self):
         match = re.search(
@@ -617,10 +916,19 @@ class CustomerPasswordResetTests(TestCase):
         )
 
         token_path = self.reset_path_from_email()
+        uidb64 = token_path.rstrip('/').rsplit('/', 2)[-2]
         token = token_path.rstrip('/').rsplit('/', 1)[-1]
         token_response = client.get(token_path, **request_meta)
         self.assertEqual(token_response.status_code, 302)
+        self.assertEqual(
+            token_response.url,
+            reverse(
+                'accounts:customer_password_reset_confirm',
+                kwargs={'uidb64': uidb64, 'token': 'set-password'},
+            ),
+        )
         self.assertNotIn(token, token_response.url)
+        self.assertEqual(client.session[INTERNAL_RESET_SESSION_TOKEN], token)
         self.assertEqual(
             token_response.headers['Referrer-Policy'],
             'same-origin',

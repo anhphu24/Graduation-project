@@ -1,6 +1,9 @@
 """食品ロス削減システム: 開発用設定。"""
-from pathlib import Path
+from copy import deepcopy
 import os
+from pathlib import Path
+
+from django.utils.log import DEFAULT_LOGGING
 
 
 def env_bool(name, default=False):
@@ -20,6 +23,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'dev-only-change-me-before-production')
 DEBUG = env_bool('DJANGO_DEBUG', True)
 ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost')
+
+LOGGING = deepcopy(DEFAULT_LOGGING)
+LOGGING['filters']['password_reset_redaction'] = {
+    '()': 'accounts.logging.PasswordResetLogFilter',
+}
+for handler in LOGGING['handlers'].values():
+    handler.setdefault('filters', []).append('password_reset_redaction')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -85,9 +95,17 @@ TIME_ZONE = 'Asia/Tokyo'
 CURRENCY = os.environ.get('CURRENCY', 'JPY')
 USE_I18N = True
 USE_TZ = True
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage',
+    },
+}
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

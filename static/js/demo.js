@@ -12,13 +12,4 @@ document.addEventListener("DOMContentLoaded", () => {
       m.textContent = "現在、この手続きはご利用いただけません。";
     }),
   );
-  document.querySelectorAll("[data-toggle-password]").forEach((btn) =>
-    btn.addEventListener("click", () => {
-      const field = document.getElementById(btn.dataset.togglePassword);
-      if (field) {
-        field.type = field.type === "password" ? "text" : "password";
-        btn.textContent = field.type === "password" ? "表示" : "非表示";
-      }
-    }),
-  );
 });

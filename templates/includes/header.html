@@ -2,7 +2,7 @@
   <a class="brand" href="{% if portal == 'shop' %}{% url 'accounts:shop_login' %}{% else %}{% url 'products:top' %}{% endif %}">
     <span class="brand-mark">✿</span>
     <span>食品ロス削減
-      <span style="display:block;font-size:10px;font-weight:500">
+      <span class="brand-subtitle">
         {% if portal == 'shop' %}店舗管理システム{% else %}おいしいを、ムダにしない。{% endif %}
       </span>
     </span>

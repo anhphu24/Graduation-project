@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.templatetags.static import static
 from django.urls import reverse
 
 
@@ -10,4 +11,6 @@ class StoreLayoutTests(TestCase):
                 self.assertEqual(response.status_code, 200)
                 self.assertContains(response, 'class="topbar"')
                 self.assertContains(response, 'class="store-page"')
+                self.assertContains(response, f'href="{static("css/style.css")}"')
+                self.assertContains(response, f'href="{static("css/stores.css")}"')
                 self.assertNotContains(response, 'class="customer-header"')

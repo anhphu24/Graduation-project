@@ -89,10 +89,14 @@ def main() -> None:
     assert "id-token: write" not in ci_workflow
     deploy_workflow = reviewed_workflows["deploy.yml"]
     assert "vars.DEPLOY_ENABLED == 'true'" in deploy_workflow
-    assert deploy_workflow.count("id-token: write") == 1
-    assert "--expected-main-sha \"$MAIN_SHA\"" in deploy_workflow
+    assert "id-token: write" not in deploy_workflow
+    assert "aws-actions/configure-aws-credentials" not in deploy_workflow
+    assert "secrets.EC2_SSH_PRIVATE_KEY" in deploy_workflow
+    assert "secrets.EC2_SSH_KNOWN_HOSTS" in deploy_workflow
+    assert "bash scripts/ssh_deploy.sh" in deploy_workflow
+    assert "needs.test.result == 'success'" in deploy_workflow
 
-    print("OIDC and IAM/SSM security template tests passed.")
+    print("Deployment security template tests passed.")
 
 
 if __name__ == "__main__":

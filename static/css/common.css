@@ -22,6 +22,7 @@
   margin: 0;
   min-width: 0;
   min-height: 100vh;
+  min-height: 100dvh;
   background: var(--fr-cream);
   color: var(--fr-ink);
   font-family: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic", system-ui, sans-serif;
@@ -51,6 +52,8 @@
   min-height: 78px;
   background: var(--fr-surface);
   border-bottom: 1px solid var(--fr-line);
+  padding-right: env(safe-area-inset-right);
+  padding-left: env(safe-area-inset-left);
 }
 
 .customer-header__inner {
@@ -335,6 +338,12 @@
   color: #81938a;
   text-align: center;
   font-size: 12px;
+}
+
+@media (min-width: 651px) {
+  .customer-menu:not([open]) > .customer-nav {
+    display: flex;
+  }
 }
 
 @media (max-width: 1020px) {

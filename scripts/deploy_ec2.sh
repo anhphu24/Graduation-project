@@ -46,6 +46,16 @@ django_manage() {
         "$VENV_DIR/bin/python" "$APP_DIR/manage.py" "$@"
 }
 
+verify_static_manifest() {
+    test -f "$APP_DIR/scripts/verify_static_manifest.py" || {
+        echo "Target release does not contain the static manifest verifier." >&2
+        return 1
+    }
+    runuser --preserve-environment -u "$APP_USER" -- \
+        env HOME="$APP_HOME" \
+        "$VENV_DIR/bin/python" "$APP_DIR/scripts/verify_static_manifest.py"
+}
+
 DATABASE_PATH="$APP_DIR/db.sqlite3"
 HEALTHCHECK_URL="http://127.0.0.1/health/"
 PREVIOUS_SHA="$(git_as_app rev-parse HEAD)"
@@ -86,6 +96,9 @@ restore_previous_release() {
         if [[ "$PRODUCTION_ENV_LOADED" -eq 1 ]]; then
             if ! django_manage collectstatic --noinput; then
                 echo "Rollback failed to restore static files." >&2
+                rollback_failed=1
+            elif ! verify_static_manifest; then
+                echo "Rollback static manifest verification failed." >&2
                 rollback_failed=1
             fi
         fi
@@ -217,6 +230,7 @@ if [[ "$DEPLOY_MODE" == "deploy" ]]; then
 fi
 
 django_manage collectstatic --noinput
+verify_static_manifest
 systemctl restart "$SERVICE_NAME"
 SERVICE_RESTARTED=1
 systemctl is-active --quiet "$SERVICE_NAME"
