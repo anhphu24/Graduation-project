@@ -1,5 +1,6 @@
 {% with namespace=request.resolver_match.namespace url_name=request.resolver_match.url_name %}
 <nav class="customer-nav" aria-label="カスタマーナビゲーション">
+  <a class="customer-nav__link" href="{% url 'products:top' %}">ホーム</a>
   <a
     class="customer-nav__link{% if namespace == 'products' and url_name != 'top' or namespace == 'market' and url_name == 'lot_list' or namespace == 'market' and url_name == 'lot_detail' %} is-active{% endif %}"
     href="{% url 'products:list' %}"
