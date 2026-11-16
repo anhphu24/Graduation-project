@@ -1,4 +1,4 @@
-{% load static %}
+{% load static v2_prices %}
 <section class="v2-lot-results" aria-labelledby="available-lots-title">
   <div class="v2-list-caption"><h2 id="available-lots-title">予約できる商品</h2><span>{{ page.paginator.count }}件</span></div>
   {% if page.object_list %}
@@ -24,9 +24,10 @@
       <div class="v2-product-body">
         <p class="v2-product-store">{{ lot.branch.chain.name }} · {{ lot.branch.name }}</p>
         <h3><a href="{% url 'market:lot_detail' lot.pk %}">{{ lot.product.name }}</a></h3>
-        <p class="v2-product-deadline">{{ lot.product.get_expiry_type_display }}：{{ lot.expires_at|date:'m/d H:i' }}</p>
+        <p class="v2-product-deadline">{{ lot.product.get_expiry_type_display }}まで {{ lot.expires_at|date:'m/d H:i' }}</p>
+        {% with discount=lot.sale_price|discount_percent:lot.original_price %}{% if discount %}<span class="v2-discount-label">{{ discount }}% OFF</span>{% endif %}{% endwith %}
         <div class="v2-product-price"><del>¥{{ lot.original_price|floatformat:0 }}</del><strong>¥{{ lot.sale_price|floatformat:0 }}</strong></div>
-        <a class="v2-button v2-button--primary v2-product-action" href="{% url 'market:lot_detail' lot.pk %}">詳細・予約へ <span aria-hidden="true">→</span></a>
+        <a class="v2-button v2-button--primary v2-product-action" href="{% url 'market:lot_detail' lot.pk %}">予約する <span aria-hidden="true">→</span></a>
       </div>
     </article>
     {% endfor %}

@@ -1,0 +1,19 @@
+{% extends 'market/customer_base.html' %}
+{% block market_title %}予約完了{% endblock %}
+{% block market_content %}
+<section class="v2-success" aria-labelledby="v2-success-title">
+  <div class="v2-success-check" aria-hidden="true">✓</div>
+  <p class="v2-eyebrow">RESERVATION CONFIRMED</p>
+  <h1 id="v2-success-title">予約が完了しました</h1>
+  <p class="v2-success-intro">ご予約ありがとうございます。<br>以下の内容をご確認のうえ、店舗にてお受け取りください。</p>
+  <div class="v2-success-receipt">
+    <div class="v2-success-row"><span>予約番号</span><strong>{{ order.id }}</strong></div>
+    <div class="v2-success-product"><span class="v2-success-product-icon" aria-hidden="true">🛍</span><div><strong>{{ order.lot.product.name }}</strong><small>¥{{ order.total_price|floatformat:0 }} · {{ order.quantity }}点</small></div></div>
+    <div class="v2-success-row"><span>受取店舗</span><strong>{{ order.lot.branch.name }}</strong></div>
+    <div class="v2-success-row"><span>受取期限</span><strong>{{ order.pickup_deadline|date:'Y/m/d H:i' }}まで</strong></div>
+    <div class="v2-success-row"><span>受取コード</span><strong class="v2-success-code">{{ order.pickup_code }}</strong></div>
+  </div>
+  <p class="v2-success-note">お支払いは店舗で行います。受取コードを店員にお見せください。</p>
+  <div class="v2-success-actions"><a class="v2-button v2-button--primary" href="{% url 'market:orders' %}">予約一覧を見る →</a><a class="v2-button v2-button--outline" href="{% url 'market:lot_list' %}">トップへ戻る</a></div>
+</section>
+{% endblock %}

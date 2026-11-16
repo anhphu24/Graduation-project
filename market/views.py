@@ -5,13 +5,14 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.paginator import Paginator
 from django.http import Http404
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from accounts.decorators import customer_required
 from products.forms import LotForm
 from reservations.forms import CollectOrderForm, ReserveLotForm
 from stores.permissions import ensure_market_staff
+from reservations.models import Order
 
 from .forms import LotSearchForm
 from .selectors import (
@@ -76,13 +77,23 @@ def reserve(request, lot_id):
                 messages.success(request, "商品を予約しました。受取コードをご確認ください。")
             else:
                 messages.info(request, "この予約はすでに受け付けています。")
-            return redirect("market:orders")
+            return redirect("market:reservation_complete", order_id=order.id)
     return render(
         request,
         "market/lot_detail.html",
         {"lot": lot, "form": form},
         status=400,
     )
+
+
+@customer_required
+def reservation_complete(request, order_id):
+    order = get_object_or_404(
+        Order.objects.select_related("lot__product", "lot__branch__chain"),
+        pk=order_id,
+        customer=request.user,
+    )
+    return render(request, "market/reservation_complete.html", {"order": order})
 
 
 @customer_required
@@ -116,7 +127,13 @@ def staff(request):
     data = staff_dashboard(request.user, branch_id=branch_id)
     if branch_id and not data["branches"].filter(pk=branch_id).exists():
         raise PermissionDenied("この店舗を表示する権限がありません。")
-    data.update({"selected_branch": branch_id, "collect_form": CollectOrderForm()})
+    status = request.GET.get("status", "all")
+    valid_statuses = {choice for choice, _ in Order.Status.choices}
+    if status not in valid_statuses:
+        status = "all"
+    if status != "all":
+        data["orders"] = data["orders"].filter(status=status)
+    data.update({"selected_branch": branch_id, "selected_status": status, "collect_form": CollectOrderForm()})
     return render(request, "market/dashboard.html", data)
 
 
@@ -134,7 +151,13 @@ def lot_new(request):
         else:
             messages.success(request, "商品ロットを登録しました。")
             return redirect("market:staff")
-    return render(request, "market/lot_form.html", {"form": form})
+    return render(
+        request, "market/lot_form.html",
+        {
+            "form": form,
+            "product_previews": list(form.fields["product"].queryset.values("id", "name", "image_url")),
+        },
+    )
 
 
 @require_POST

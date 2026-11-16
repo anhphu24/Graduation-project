@@ -233,8 +233,32 @@ class MarketFlowTests(TestCase):
             reverse("market:reserve", args=(self.lot.pk,)),
             {"quantity": 1, "request_token": uuid.uuid4()},
         )
-        self.assertRedirects(response, reverse("market:orders"))
+        order = Order.objects.get(customer=self.customer)
+        self.assertRedirects(response, reverse("market:reservation_complete", args=(order.pk,)))
+        self.assertContains(self.client.get(reverse("market:reservation_complete", args=(order.pk,))), "予約が完了しました")
         self.assertEqual(Order.objects.filter(customer=self.customer).count(), 1)
+
+
+    def test_reservation_complete_is_customer_private(self):
+        order, _ = self.reserve(quantity=1)
+        url = reverse("market:reservation_complete", args=(order.pk,))
+        anonymous = self.client.get(url)
+        self.assertEqual(anonymous.status_code, 302)
+        other = User.objects.create_user(username="unrelated-v2@example.com", password="test-password")
+        Profile.objects.create(user=other, role="customer")
+        self.client.force_login(other)
+        self.assertEqual(self.client.get(url).status_code, 404)
+        self.client.force_login(self.customer)
+        self.assertContains(self.client.get(url), "予約が完了しました")
+
+    def test_staff_order_filter_only_shows_selected_status(self):
+        order, _ = self.reserve(quantity=1)
+        self.client.force_login(self.staff)
+        reserved = self.client.get(reverse("market:staff"), {"status": "reserved"})
+        self.assertContains(reserved, "予約注文管理")
+        self.assertContains(reserved, order.lot.product.name)
+        collected = self.client.get(reverse("market:staff"), {"status": "collected"})
+        self.assertNotContains(collected, order.lot.product.name)
 
     def test_seed_demo_is_repeatable_and_does_not_create_accounts(self):
         user_count = User.objects.count()

@@ -1,5 +1,5 @@
 {% extends 'market/customer_base.html' %}
-{% load static %}
+{% load static v2_prices %}
 {% block market_title %}{{ lot.product.name }}{% endblock %}
 {% block market_content %}
 <a class="v2-back" href="{% url 'products:list' %}">← 商品一覧に戻る</a>
@@ -23,6 +23,7 @@
     <p class="v2-product-store">{{ lot.branch.chain.name }} · {{ lot.branch.name }}</p>
     <h1>{{ lot.product.name }}</h1>
     <p class="v2-detail-description">{{ lot.product.description|default:'商品の詳細は店舗でご確認ください。' }}</p>
+    {% with discount=lot.sale_price|discount_percent:lot.original_price %}{% if discount %}<div class="v2-detail-discount"><span>期限までおトク</span><strong>{{ discount }}% OFF</strong></div>{% endif %}{% endwith %}
     <div class="v2-detail-prices"><del>¥{{ lot.original_price|floatformat:0 }}</del><strong>¥{{ lot.sale_price|floatformat:0 }}</strong><span>税込・店頭決済</span></div>
     <dl class="v2-detail-facts">
       <div><dt>在庫数</dt><dd>残り <strong>{{ lot.available_quantity }}点</strong></dd></div>

@@ -12,6 +12,7 @@ urlpatterns = [
     path("lots/<int:lot_id>/reserve/", views.reserve, name="reserve"),
     path("signup/", account_views.customer_signup, name="signup"),
     path("orders/", views.orders, name="orders"),
+    path("orders/<uuid:order_id>/complete/", views.reservation_complete, name="reservation_complete"),
     path("orders/<uuid:order_id>/cancel/", views.cancel, name="cancel"),
     path("staff/", views.staff, name="staff"),
     path("staff/lots/new/", views.lot_new, name="lot_new"),

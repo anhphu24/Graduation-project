@@ -5,6 +5,7 @@
       <span class="customer-brand__mark" aria-hidden="true">🌿</span>
       <span class="customer-brand__copy"><strong>Food Rescue</strong><small>おいしいを、ムダにしない。</small></span>
     </a>
+    <form class="v2-desktop-header-search" action="{% url 'products:list' %}" method="get" role="search"><label for="v2-header-search" class="v2-sr-only">商品検索</label><input id="v2-header-search" type="search" name="q" placeholder="商品名・カテゴリー・店舗で検索"></form>
     <details class="customer-menu">
       <summary class="customer-menu__toggle" aria-label="メニューを開く">☰ <span>メニュー</span></summary>
       {% include 'includes/navbar.html' %}

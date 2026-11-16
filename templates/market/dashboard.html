@@ -1,40 +1,77 @@
 {% extends 'market/staff_base.html' %}
 {% block market_title %}店舗ダッシュボード{% endblock %}
 {% block market_content %}
-<div class="v2-shop-title"><div><p class="v2-eyebrow">STORE OPERATIONS</p><h1>ダッシュボード</h1><p>店舗の予約・受取・食品ロス削減状況を確認できます。</p></div><a class="v2-button v2-button--primary" href="{% url 'market:lot_new' %}">＋ 商品・ロット登録</a></div>
-<section class="v2-shop-panel" aria-label="表示店舗の絞り込み">
-  <form class="market-branch-filter" method="get"><label for="branch">表示店舗</label><select id="branch" name="branch"><option value="">すべての担当店舗</option>{% for branch in branches %}<option value="{{ branch.pk }}" {% if selected_branch == branch.pk|stringformat:'s' %}selected{% endif %}>{{ branch }}</option>{% endfor %}</select><button type="submit">表示する</button></form>
-</section>
+<div class="v2-shop-title">
+  <div><p class="v2-eyebrow">STORE OPERATIONS</p><h1>ダッシュボード</h1><p>店舗の予約・受取・食品ロス削減状況を確認できます。</p></div>
+  <a class="v2-button v2-button--primary" href="{% url 'market:lot_new' %}">＋ 商品・ロット登録</a>
+</div>
+<div class="v2-dashboard-branch">
+ <form class="market-branch-filter" method="get">
+ <label for="branch">表示店舗</label>
+ <select id="branch" name="branch"><option value="">すべての担当店舗</option>{% for branch in branches %}<option value="{{ branch.pk }}" {% if selected_branch == branch.pk|stringformat:'s' %}selected{% endif %}>{{ branch }}</option>{% endfor %}</select>
+ <button type="submit">表示</button>
+ </form>
+</div>
 <section class="market-stats" aria-label="店舗集計">
-  <div><span>本日の予約状況 · 予約中</span><strong>{{ reserved_count }} <small>件</small></strong></div>
-  <div><span>受け取り済み</span><strong>{{ collected_count }} <small>件</small></strong></div>
-  <div><span>受取済み売上</span><strong>¥{{ revenue|floatformat:0 }}</strong></div>
-  <div><span>24時間以内に期限到来</span><strong>{{ expiring_count }} <small>点</small></strong></div>
+  <div class="v2-stat"><span>🗓 予約中</span><strong>{{ reserved_count }} <small>件</small></strong><small>受取待ちのご予約</small></div>
+  <div class="v2-stat"><span>✓ 受け取り済み</span><strong>{{ collected_count }} <small>件</small></strong><small>受け渡し完了</small></div>
+  <div class="v2-stat"><span>¥ 売上（受取済み）</span><strong>¥{{ revenue|floatformat:0 }}</strong><small>店頭での受取分</small></div>
+  <div class="v2-stat"><span>◷ 期限が近い商品</span><strong>{{ expiring_count }} <small>ロット</small></strong><small>今後24時間以内</small></div>
 </section>
-<section class="v2-shop-panel" id="v2-shop-expiring" aria-labelledby="v2-shop-expiring-title">
-  <h2 id="v2-shop-expiring-title">期限が近い商品</h2>
-  {% if expiring_lots %}<ul class="v2-shop-status-list">{% for lot in expiring_lots %}<li><span><strong>{{ lot.product.name }}</strong> — {{ lot.branch.name }}</span><small>残り{{ lot.available_quantity }}点 · {{ lot.expires_at|date:'m/d H:i' }}</small></li>{% endfor %}</ul>{% else %}<p>現在、24時間以内に期限を迎える在庫はありません。</p>{% endif %}
-</section>
-<section id="v2-shop-orders" aria-labelledby="v2-shop-orders-title">
-  <div class="v2-shop-title"><div><p class="v2-eyebrow">RESERVATION MANAGEMENT</p><h2 id="v2-shop-orders-title">予約注文管理</h2></div></div>
-  {% if orders %}
-  <div class="market-order-list">
-    {% for order in orders %}
-    <article class="market-order">
-      <div class="v2-order-card-header"><span>予約番号：{{ order.id|slice:":8" }}</span><span class="market-status market-status--{{ order.status }}">{{ order.get_status_display }}</span></div>
-      <h3>{{ order.lot.product.name }} × {{ order.quantity }}</h3>
-      <p>{{ order.lot.branch.name }} / {{ order.customer.email|default:order.customer.username }}</p>
-      <dl><div><dt>合計</dt><dd>¥{{ order.total_price|floatformat:0 }}</dd></div><div><dt>受取期限</dt><dd>{{ order.pickup_deadline|date:'Y/m/d H:i' }}</dd></div></dl>
-      {% if order.status == 'reserved' %}
-      <form class="market-collect" method="post" action="{% url 'market:collect' order.id %}" data-v2-once>{% csrf_token %}
-        <label>受取コード <input type="text" name="pickup_code" autocomplete="off" required></label>
-        <label class="market-check"><input type="checkbox" name="payment_confirmed" required> 入金確認・商品受渡し済み</label>
-        <button class="v2-button v2-button--primary" type="submit">受取を確定する</button>
-      </form>
-      {% endif %}
-    </article>
-    {% endfor %}
+<div class="v2-shop-overview">
+ <section class="v2-shop-panel v2-trend-panel" aria-label="直近7日間の予約">
+   <h2>予約数の推移（直近7日間）</h2>
+   <svg class="v2-trend-svg" viewBox="0 0 480 156" role="img" aria-label="直近7日間の予約数">
+     <line x1="18" y1="128" x2="450" y2="128" stroke="#dbe9dd"/>
+     <line x1="18" y1="78" x2="450" y2="78" stroke="#edf1ed" stroke-dasharray="4 4"/>
+     <line x1="18" y1="30" x2="450" y2="30" stroke="#edf1ed" stroke-dasharray="4 4"/>
+     <polyline fill="none" stroke="#1c9b4a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="{{ trend_points }}"/>
+     {% for point in trend %}<circle cx="{{ point.x }}" cy="{{ point.y }}" r="4" fill="#fff" stroke="#168b40" stroke-width="3"><title>{{ point.label }}: {{ point.count }}件</title></circle>{% endfor %}
+   </svg>
+   <div class="v2-trend-labels">{% for point in trend %}<span title="{{ point.count }}件">{{ point.label }}</span>{% endfor %}</div>
+ </section>
+ <section class="v2-shop-panel" id="v2-shop-expiring" aria-labelledby="v2-shop-expiring-title">
+   <h2 id="v2-shop-expiring-title">期限が近い商品</h2>
+   {% if expiring_lots %}<ul class="v2-shop-status-list">{% for lot in expiring_lots %}
+     <li><span class="v2-expiring-icon" aria-hidden="true">🥬</span><span><strong>{{ lot.product.name }}</strong><small>{{ lot.branch.name }} · {{ lot.expires_at|date:'m/d H:i' }}まで</small></span><em>残り{{ lot.available_quantity }}点</em></li>
+   {% endfor %}</ul>{% else %}<p class="v2-shop-no-data">現在、24時間以内に期限を迎える在庫はありません。</p>{% endif %}
+ </section>
+</div>
+<section class="v2-shop-panel" id="v2-shop-orders" aria-labelledby="v2-shop-orders-title">
+ <div class="v2-order-panel-head"><div><p class="v2-eyebrow">ORDERS</p><h2 id="v2-shop-orders-title">予約注文管理</h2></div>
+  <div class="v2-order-tabs" aria-label="注文ステータス">
+    <a href="{% url 'market:staff' %}?branch={{ selected_branch|default:'' }}&status=all#v2-shop-orders" {% if selected_status == 'all' %}aria-current="page"{% endif %}>すべて</a>
+    <a href="{% url 'market:staff' %}?branch={{ selected_branch|default:'' }}&status=reserved#v2-shop-orders" {% if selected_status == 'reserved' %}aria-current="page"{% endif %}>受け取り待ち</a>
+    <a href="{% url 'market:staff' %}?branch={{ selected_branch|default:'' }}&status=collected#v2-shop-orders" {% if selected_status == 'collected' %}aria-current="page"{% endif %}>受け取り完了</a>
+    <a href="{% url 'market:staff' %}?branch={{ selected_branch|default:'' }}&status=cancelled#v2-shop-orders" {% if selected_status == 'cancelled' %}aria-current="page"{% endif %}>キャンセル</a>
   </div>
-  {% else %}<div class="v2-empty"><span aria-hidden="true">▤</span><h3>対象の注文はありません</h3><p>店舗の予約が入ると、こちらに表示されます。</p></div>{% endif %}
+ </div>
+ {% if orders %}
+ <div class="v2-shop-orders-desktop" role="table" aria-label="予約注文一覧">
+   <div class="v2-shop-orders-row v2-shop-orders-heading" role="row"><span role="columnheader">予約番号</span><span role="columnheader">商品・店舗</span><span role="columnheader">受取予定</span><span role="columnheader">ステータス</span></div>
+   {% for order in orders %}
+   <div class="v2-shop-orders-row" role="row">
+    <span role="cell">#{{ order.id|slice:":8" }}</span><span role="cell"><strong>{{ order.lot.product.name }}</strong><small>{{ order.lot.branch.name }}</small></span>
+    <span role="cell">{{ order.pickup_deadline|date:'m/d H:i' }}</span>
+    <span role="cell"><span class="market-status market-status--{{ order.status }}">{{ order.get_status_display }}</span></span>
+   </div>
+   {% endfor %}
+ </div>
+ <div class="market-order-list v2-mobile-pickup">
+  {% for order in orders %}
+  <article class="market-order">
+   <div class="v2-order-card-header"><span>#{{ order.id|slice:":8" }}</span><span class="market-status market-status--{{ order.status }}">{{ order.get_status_display }}</span></div>
+   <h3>{{ order.lot.product.name }} × {{ order.quantity }}</h3>
+   <p>{{ order.lot.branch.name }} / {{ order.customer.email|default:order.customer.username }}</p>
+   <dl><div><dt>合計</dt><dd>¥{{ order.total_price|floatformat:0 }}</dd></div><div><dt>受取期限</dt><dd>{{ order.pickup_deadline|date:'Y/m/d H:i' }}</dd></div></dl>
+   {% if order.status == 'reserved' %}
+   <form class="market-collect" method="post" action="{% url 'market:collect' order.id %}" data-v2-once>{% csrf_token %}
+     <label>受取コード<input type="text" name="pickup_code" autocomplete="off" required></label>
+     <label class="market-check"><input type="checkbox" name="payment_confirmed" required> 入金確認・商品受渡し済み</label>
+     <button class="v2-button v2-button--primary" type="submit">受取を確定する</button>
+   </form>{% endif %}
+  </article>{% endfor %}
+ </div>
+ {% else %}<div class="v2-shop-no-data">対象の注文はありません。</div>{% endif %}
 </section>
 {% endblock %}

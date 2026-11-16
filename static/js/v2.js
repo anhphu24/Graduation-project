@@ -41,6 +41,23 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('pageshow', close);
     window.addEventListener('resize', () => { if (window.innerWidth > 830) close(); });
   }
+  const productSelect = document.querySelector('.v2-lot-field--product select');
+  const previewImage = document.getElementById('v2-product-preview');
+  const previewName = document.getElementById('v2-product-preview-name');
+  const previewData = document.getElementById('v2-product-previews');
+  if (productSelect && previewImage && previewName && previewData) {
+    let items = [];
+    try { items = JSON.parse(previewData.textContent); } catch (_) { items = []; }
+    const fallback = previewImage.getAttribute('src');
+    const render = () => {
+      const selected = items.find(item => String(item.id) === productSelect.value);
+      previewName.textContent = selected ? selected.name : '商品を選択してください';
+      previewImage.src = selected?.image_url || fallback;
+      previewImage.onerror = () => { previewImage.onerror = null; previewImage.src = fallback; };
+    };
+    productSelect.addEventListener('change', render);
+    render();
+  }
   document.querySelectorAll('form[data-v2-once]').forEach(form => {
     form.addEventListener('submit', (event) => {
       if (form.dataset.v2Submitting === 'true') { event.preventDefault(); return; }
