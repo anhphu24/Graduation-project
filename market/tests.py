@@ -258,7 +258,7 @@ class MarketFlowTests(TestCase):
         self.assertContains(reserved, "予約注文管理")
         self.assertContains(reserved, order.lot.product.name)
         collected = self.client.get(reverse("market:staff"), {"status": "collected"})
-        self.assertNotContains(collected, order.lot.product.name)
+        self.assertContains(collected, "対象の注文はありません")
 
     def test_seed_demo_is_repeatable_and_does_not_create_accounts(self):
         user_count = User.objects.count()

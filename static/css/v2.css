@@ -250,3 +250,24 @@
 @media(max-width:830px){.v2-shop-overview{grid-template-columns:1fr}.v2-dashboard-branch{justify-content:flex-start;margin:0 0 18px}.v2-shop .v2-mobile-pickup{grid-template-columns:1fr}.v2-lot-registration{grid-template-columns:1fr}.v2-lot-preview{max-width:320px}}
 @media(max-width:650px){.v2-desktop-header-search{display:none}.v2-products-heading h2{font-size:19px}.v2-shop .market-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.v2-shop-overview{gap:12px}.v2-order-panel-head{align-items:stretch;flex-direction:column}.v2-order-tabs{overflow-x:auto;flex-wrap:nowrap;padding-bottom:5px}.v2-order-tabs a{white-space:nowrap;flex-shrink:0}.v2-shop-orders-desktop{display:none}.v2-lot-fields{grid-template-columns:1fr}.v2-lot-field--branch,.v2-lot-field--product,.v2-lot-field--code{grid-column:auto}.v2-lot-form-panel{padding:17px}.v2-success{margin:0 auto 30px;padding:30px 15px}.v2-success h1{font-size:23px}.v2-success-row{gap:8px}.v2-success-row strong{font-size:11px}}
 @media(min-width:651px){.v2-product-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+/* Reference mobile composition: full-width horizontal product card */
+@media(max-width:650px){
+ .v2-product-grid{grid-template-columns:1fr;gap:12px}
+ .v2-product-card{flex-direction:row;align-items:stretch;min-height:148px}
+ .v2-product-photo{width:42%;flex:0 0 42%;aspect-ratio:auto;min-height:148px}
+ .v2-product-body{width:58%;min-width:0;padding:12px;display:flex;flex-direction:column}
+ .v2-product-body h3{font-size:14px;margin:2px 0 4px}
+ .v2-product-store{font-size:10px}
+ .v2-product-price strong{font-size:20px}
+ .v2-product-action{margin-top:2px;min-height:40px}
+ .v2-benefits{grid-template-columns:repeat(4,minmax(0,1fr));gap:0}
+ .v2-benefits>div{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:4px;text-align:center;border-right:1px solid var(--v2-border)}
+ .v2-benefits>div:last-child{border-right:0}
+ .v2-benefits-icon{font-size:23px}
+ .v2-benefits strong{font-size:9px;line-height:1.35}
+ .v2-benefits small{display:none}
+ .v2-shop .v2-mobile-pickup{grid-template-columns:1fr}
+ .v2-shop .v2-shop-overview{grid-template-columns:1fr}
+ .v2-success-actions .v2-button{width:100%}
+}
