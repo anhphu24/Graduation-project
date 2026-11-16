@@ -1,9 +1,11 @@
-from django.shortcuts import render
+from django.shortcuts import redirect
 
 
 def dashboard(request):
-    return render(request, 'stores/dashboard.html')
+    # The canonical staff dashboard performs authentication and Membership checks.
+    return redirect('market:staff')
 
 
 def product_form(request):
-    return render(request, 'stores/product_form.html')
+    # Reuse the real, permission-checked lot registration workflow.
+    return redirect('market:lot_new')

@@ -1,16 +1,19 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block body_class %}customer customer-page{% endblock %}
+{% block body_class %}customer customer-page v2-customer{% endblock %}
 {% block extra_css %}
   <link rel="stylesheet" href="{% static 'css/common.css' %}">
+  <link rel="stylesheet" href="{% static 'css/v2.css' %}">
   {% block customer_extra_css %}{% endblock %}
 {% endblock %}
 {% block body %}
   {% include 'includes/customer_header.html' %}
   {% block page_content %}{% endblock %}
   {% include 'includes/footer.html' %}
+  {% include 'includes/customer_bottom_nav.html' %}
 {% endblock %}
 {% block extra_js %}
   <script defer src="{% static 'js/customer_nav.js' %}"></script>
+  <script defer src="{% static 'js/v2.js' %}"></script>
   {% block customer_extra_js %}{% endblock %}
 {% endblock %}

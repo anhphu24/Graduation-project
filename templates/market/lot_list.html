@@ -1,7 +1,40 @@
 {% extends 'market/customer_base.html' %}
-{% block market_title %}商品を探す{% endblock %}
+{% load static %}
+{% block market_title %}Food Rescue | まだ食べられる、おいしい食品を{% endblock %}
 {% block market_content %}
-<section class="market-hero"><p class="market-kicker">FOOD RESCUE MARKET</p><h1>まだおいしい商品を、近くのお店で。</h1><p>オンラインで予約し、指定時間に店頭で受け取ってお支払いください。</p></section>
-<form class="market-search" method="get" role="search"><div>{{ form.q.label_tag }}{{ form.q }}</div><div>{{ form.branch.label_tag }}{{ form.branch }}</div><button type="submit">検索</button></form>
+<section class="v2-hero" aria-labelledby="v2-hero-heading">
+  <div class="v2-hero-content">
+    <p class="v2-hero-kicker">FOOD RESCUE · 食品ロスを減らすお買い物</p>
+    <h1 id="v2-hero-heading">まだ食べられる、<br>おいしい食品を<br><span>お得にレスキュー！</span></h1>
+    <p>期限が近い食品をオンラインで予約して、<br>お近くの店舗で受け取りましょう。</p>
+    <a class="v2-button v2-button--primary" href="#v2-products">商品を探す <span aria-hidden="true">→</span></a>
+  </div>
+  <div class="v2-hero-photo" aria-hidden="true">
+    <img src="{% static 'images/vegetable.jpg' %}" alt="" fetchpriority="high" width="640" height="430">
+    <span class="v2-hero-sticker">GOOD FOOD<br>LESS WASTE</span>
+  </div>
+</section>
+<section class="v2-benefits" aria-label="Food Rescueの特徴">
+  <div><span class="v2-benefits-icon" aria-hidden="true">♻</span><strong>食品ロスの削減</strong><small>まだ食べられる食品を有効活用</small></div>
+  <div><span class="v2-benefits-icon" aria-hidden="true">¥</span><strong>お得に購入</strong><small>通常よりお得な価格で</small></div>
+  <div><span class="v2-benefits-icon" aria-hidden="true">⌂</span><strong>地域の店舗を応援</strong><small>近くのスーパー・コンビニで受取</small></div>
+  <div><span class="v2-benefits-icon" aria-hidden="true">✓</span><strong>安心・安全</strong><small>店舗で受け取って店頭決済</small></div>
+</section>
+<section class="v2-discovery" aria-label="商品検索">
+  <form class="v2-home-search" method="get" action="{% url 'products:list' %}" role="search">
+    <label for="v2-home-q">商品・店舗を探す</label>
+    <input id="v2-home-q" type="search" name="q" value="{{ request.GET.q|default:'' }}" placeholder="商品名・カテゴリー・店舗名で検索">
+    <button class="v2-button v2-button--primary" type="submit">検索 <span aria-hidden="true">⌕</span></button>
+  </form>
+  <div class="v2-discovery-links"><span>人気の検索：</span><a href="{% url 'products:list' %}?q=パン">パン</a><a href="{% url 'products:list' %}?q=弁当">お弁当</a><a href="{% url 'products:list' %}?q=野菜">野菜</a><a href="{% url 'products:list' %}?q=お菓子">お菓子</a></div>
+</section>
+<div class="v2-products-heading" id="v2-products">
+  <div><p class="v2-eyebrow">TODAY'S RESCUE</p><h2>🔥 まもなく期限のおすすめ</h2><p>受け取り可能な商品を、いまの在庫からご案内します。</p></div>
+  <a class="v2-text-link" href="{% url 'products:list' %}">すべて見る <span aria-hidden="true">→</span></a>
+</div>
 {% include 'market/partials/lot_results.html' with page=page %}
+<section class="v2-how">
+  <div><p class="v2-eyebrow">HOW IT WORKS</p><h2>予約して、お店で受け取るだけ。</h2></div>
+  <ol><li><b>01</b><strong>商品を選ぶ</strong><span>お得な食品を検索</span></li><li><b>02</b><strong>オンラインで予約</strong><span>受取コードを確認</span></li><li><b>03</b><strong>店頭でお支払い</strong><span>指定店舗で受け取り</span></li></ol>
+</section>
 {% endblock %}

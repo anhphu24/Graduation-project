@@ -1,10 +1,48 @@
 {% extends 'market/customer_base.html' %}
+{% load static %}
 {% block market_title %}{{ lot.product.name }}{% endblock %}
 {% block market_content %}
-<a class="market-back" href="{% url 'products:list' %}">← 商品一覧に戻る</a>
-<article class="market-detail"><div class="market-detail-image">{% if lot.product.image_url %}<img src="{{ lot.product.image_url }}" alt="{{ lot.product.name }}">{% else %}<span aria-hidden="true">🥕</span>{% endif %}</div><div class="market-detail-body"><p class="market-card-shop">{{ lot.branch.chain.name }}・{{ lot.branch.name }}</p><h1>{{ lot.product.name }}</h1><p>{{ lot.product.description|default:'商品説明は準備中です。' }}</p>
-<dl class="market-facts"><div><dt>受取店舗</dt><dd>{{ lot.branch.name }}<br>{{ lot.branch.address }}</dd></div><div><dt>アレルギー情報</dt><dd>{{ lot.product.allergens|default:'登録なし' }}</dd></div><div><dt>保存方法</dt><dd>{{ lot.product.storage_instructions|default:'登録なし' }}</dd></div><div><dt>{{ lot.product.get_expiry_type_display }}</dt><dd>{{ lot.expires_at|date:'Y/m/d H:i' }}</dd></div><div><dt>受取時間</dt><dd>{{ lot.pickup_start|date:'Y/m/d H:i' }}〜{{ lot.pickup_end|date:'Y/m/d H:i' }}</dd></div></dl>
-<div class="market-detail-price"><del>{{ lot.original_price|floatformat:0 }} {{ MARKET_CURRENCY }}</del><strong>{{ lot.sale_price|floatformat:0 }} {{ MARKET_CURRENCY }}</strong><span>残り{{ lot.available_quantity }}点</span></div>
-{% if request.user.is_authenticated %}<form class="market-reserve" method="post" action="{% url 'market:reserve' lot.pk %}">{% csrf_token %}{{ form.request_token }}{{ form.non_field_errors }}<label for="{{ form.quantity.id_for_label }}">{{ form.quantity.label }}</label>{{ form.quantity }}{{ form.quantity.errors }}<button class="market-button" type="submit">この商品を予約する</button><small>お支払いは受取時に店頭で行います。</small></form>{% else %}<a class="market-button" href="{% url 'accounts:customer_login' %}?next={{ request.path|urlencode }}">ログインして予約する</a>{% endif %}
-</div></article>
+<a class="v2-back" href="{% url 'products:list' %}">← 商品一覧に戻る</a>
+<article class="v2-detail">
+  <div class="v2-detail-visual">
+    {% if lot.product.image_url %}
+      <img src="{{ lot.product.image_url }}" width="650" height="490" alt="{{ lot.product.name }}">
+    {% elif 'パン' in lot.product.name %}
+      <img src="{% static 'images/bread.jpg' %}" width="650" height="490" alt="">
+    {% elif '弁当' in lot.product.name or '惣菜' in lot.product.name %}
+      <img src="{% static 'images/bento.jpg' %}" width="650" height="490" alt="">
+    {% elif '野菜' in lot.product.name %}
+      <img src="{% static 'images/vegetable.jpg' %}" width="650" height="490" alt="">
+    {% else %}
+      <img src="{% static 'images/placeholder.svg' %}" width="650" height="490" alt="">
+    {% endif %}
+    <span class="v2-detail-tag">期限間近のおトクな商品</span>
+  </div>
+  <div class="v2-detail-information">
+    <p class="v2-eyebrow">PRODUCT DETAIL</p>
+    <p class="v2-product-store">{{ lot.branch.chain.name }} · {{ lot.branch.name }}</p>
+    <h1>{{ lot.product.name }}</h1>
+    <p class="v2-detail-description">{{ lot.product.description|default:'商品の詳細は店舗でご確認ください。' }}</p>
+    <div class="v2-detail-prices"><del>¥{{ lot.original_price|floatformat:0 }}</del><strong>¥{{ lot.sale_price|floatformat:0 }}</strong><span>税込・店頭決済</span></div>
+    <dl class="v2-detail-facts">
+      <div><dt>在庫数</dt><dd>残り <strong>{{ lot.available_quantity }}点</strong></dd></div>
+      <div><dt>受取店舗</dt><dd>{{ lot.branch.name }} · {{ lot.branch.address }}</dd></div>
+      <div><dt>受取時間</dt><dd>{{ lot.pickup_start|date:'m/d H:i' }} 〜 {{ lot.pickup_end|date:'m/d H:i' }}</dd></div>
+      <div><dt>{{ lot.product.get_expiry_type_display }}</dt><dd>{{ lot.expires_at|date:'Y/m/d H:i' }}</dd></div>
+      <div><dt>アレルギー</dt><dd>{{ lot.product.allergens|default:'登録なし' }}</dd></div>
+      <div><dt>保存方法</dt><dd>{{ lot.product.storage_instructions|default:'登録なし' }}</dd></div>
+    </dl>
+    {% if request.user.is_authenticated %}
+    <form class="v2-reserve-form" method="post" action="{% url 'market:reserve' lot.pk %}" data-v2-once>
+      {% csrf_token %}{{ form.request_token }}{{ form.non_field_errors }}
+      <label for="{{ form.quantity.id_for_label }}">予約数量</label>
+      <div class="v2-reserve-controls">{{ form.quantity }}<button class="v2-button v2-button--primary" type="submit">この商品を予約する →</button></div>
+      {{ form.quantity.errors }}
+      <small>店頭でお支払いください。ご予約後に受取コードを発行します。</small>
+    </form>
+    {% else %}
+    <a class="v2-button v2-button--primary v2-detail-login" href="{% url 'accounts:customer_login' %}?next={{ request.path|urlencode }}">ログインして予約する →</a>
+    {% endif %}
+  </div>
+</article>
 {% endblock %}

@@ -1,15 +1,12 @@
+{% load static %}
 <header class="customer-header">
   <div class="customer-header__inner">
-    <a class="customer-brand" href="{% url 'products:top' %}" aria-label="食品ロス削減 トップへ">
+    <a class="customer-brand" href="{% url 'market:lot_list' %}" aria-label="Food Rescue ホーム">
       <span class="customer-brand__mark" aria-hidden="true">🌿</span>
-      <span class="customer-brand__copy">
-        <strong>食品ロス削減</strong>
-        <small>おいしいを、ムダにしない。</small>
-      </span>
+      <span class="customer-brand__copy"><strong>Food Rescue</strong><small>おいしいを、ムダにしない。</small></span>
     </a>
-
     <details class="customer-menu">
-      <summary class="customer-menu__toggle">メニュー</summary>
+      <summary class="customer-menu__toggle" aria-label="メニューを開く">☰ <span>メニュー</span></summary>
       {% include 'includes/navbar.html' %}
     </details>
   </div>

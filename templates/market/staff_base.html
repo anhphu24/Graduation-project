@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{% block market_title %}店舗管理{% endblock %} | Food Rescue{% endblock %}
+{% block body_class %}market-page v2-shop{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/common.css' %}">
+<link rel="stylesheet" href="{% static 'css/market.css' %}">
+<link rel="stylesheet" href="{% static 'css/v2.css' %}">
+{% endblock %}
+{% block body %}
+<div class="v2-shop-shell">
+  <aside class="v2-shop-sidebar" id="v2-shop-sidebar" aria-label="店舗管理ナビゲーション">
+    <a class="v2-shop-logo" href="{% url 'market:staff' %}"><span aria-hidden="true">🌿</span> Food Rescue <small>店舗管理</small></a>
+    <nav aria-label="店舗メニュー">
+      <a href="{% url 'market:staff' %}" {% if request.resolver_match.url_name == 'staff' %}aria-current="page"{% endif %}>▦　ダッシュボード</a>
+      <a href="{% url 'market:lot_new' %}" {% if request.resolver_match.url_name == 'lot_new' %}aria-current="page"{% endif %}>▣　商品・ロット登録</a>
+      <a href="{% url 'market:staff' %}#v2-shop-orders">▤　予約注文管理</a>
+      <a href="{% url 'market:staff' %}#v2-shop-orders">✓　受け取り処理</a>
+      <a href="{% url 'market:staff' %}#v2-shop-expiring">◷　期限が近い商品</a>
+      <a href="{% url 'market:lot_list' %}">⌂　Customerサイト</a>
+    </nav>
+    <div class="v2-shop-sidebar-foot">食品ロスを減らす、<br>店舗運営をもっとスマートに。</div>
+  </aside>
+  <div class="v2-shop-workspace">
+    <header class="market-header v2-shop-header">
+      <button type="button" class="v2-shop-menu-button" aria-controls="v2-shop-sidebar" aria-expanded="false" data-v2-shop-menu>☰ <span class="v2-sr-only">メニューを開く</span></button>
+      <a class="v2-shop-header-brand" href="{% url 'market:staff' %}">Food Rescue <small>店舗管理</small></a>
+      <div class="v2-shop-header-right">
+        <span>店舗スタッフ</span>
+        <form method="post" action="{% url 'accounts:customer_logout' %}">{% csrf_token %}<button type="submit">ログアウト</button></form>
+      </div>
+    </header>
+    {% if messages %}<div class="market-messages" aria-live="polite">{% for message in messages %}<p class="market-message market-message--{{ message.tags }}">{{ message }}</p>{% endfor %}</div>{% endif %}
+    <main id="main-content" class="market-main v2-shop-main">{% block market_content %}{% endblock %}</main>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}<script defer src="{% static 'js/v2.js' %}"></script>{% endblock %}

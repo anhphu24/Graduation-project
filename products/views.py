@@ -10,7 +10,9 @@ from .selectors import available_lots
 
 @customer_required
 def top(request):
-    return render(request, 'products/top.html')
+    # Use the same real DB-backed market homepage as the public root.
+    from market.views import lot_list
+    return lot_list(request)
 
 
 def product_list(request):

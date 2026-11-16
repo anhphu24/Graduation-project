@@ -1,3 +1,16 @@
-{% extends 'market/base.html' %}
-{% block market_title %}商品ロット登録{% endblock %}
-{% block market_content %}<a class="market-back" href="{% url 'market:staff' %}">← ダッシュボードに戻る</a><section class="market-form-panel"><p class="market-kicker">NEW LOT</p><h1>商品ロットを登録</h1><p>権限のある店舗と、同じチェーンの商品だけ登録できます。</p><form method="post">{% csrf_token %}{{ form.non_field_errors }}{% for field in form %}<div class="market-field">{{ field.label_tag }}{{ field }}{{ field.errors }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}</div>{% endfor %}<button class="market-button" type="submit">登録する</button></form></section>{% endblock %}
+{% extends 'market/staff_base.html' %}
+{% block market_title %}商品・ロット登録{% endblock %}
+{% block market_content %}
+<a class="v2-back" href="{% url 'market:staff' %}">← ダッシュボードに戻る</a>
+<section class="market-form-panel v2-shop-panel" aria-labelledby="v2-lot-new-title">
+  <p class="v2-eyebrow">PRODUCT MANAGEMENT</p><h1 id="v2-lot-new-title">商品・ロット登録</h1>
+  <p>販売する店舗と商品を選び、在庫数・価格・受取時間を登録してください。</p>
+  <form method="post" data-v2-once>
+    {% csrf_token %}{{ form.non_field_errors }}
+    {% for field in form %}
+    <div class="market-field">{{ field.label_tag }}{{ field }}{{ field.errors }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}</div>
+    {% endfor %}
+    <div class="v2-shop-title"><a class="v2-button v2-button--outline" href="{% url 'market:staff' %}">キャンセル</a><button class="v2-button v2-button--primary" type="submit">登録する →</button></div>
+  </form>
+</section>
+{% endblock %}

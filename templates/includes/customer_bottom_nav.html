@@ -1,0 +1,8 @@
+{% with namespace=request.resolver_match.namespace url_name=request.resolver_match.url_name %}
+<nav class="v2-bottom-nav" aria-label="モバイルナビゲーション">
+  <a href="{% url 'market:lot_list' %}" {% if namespace == 'market' and url_name == 'lot_list' or namespace == 'products' and url_name == 'top' %}data-active="true"{% endif %}><span aria-hidden="true">⌂</span><small>ホーム</small></a>
+  <a href="{% url 'products:list' %}" {% if namespace == 'products' and url_name == 'list' or namespace == 'market' and url_name == 'lot_detail' %}data-active="true"{% endif %}><span aria-hidden="true">⌕</span><small>探す</small></a>
+  <a href="{% if request.user.is_authenticated %}{% url 'market:orders' %}{% else %}{% url 'accounts:customer_login' %}?next={% url 'market:orders' %}{% endif %}" {% if namespace == 'market' and url_name == 'orders' %}data-active="true"{% endif %}><span aria-hidden="true">▤</span><small>予約一覧</small></a>
+  <a href="{% if request.user.is_authenticated %}{% url 'accounts:mypage' %}{% else %}{% url 'accounts:customer_login' %}{% endif %}" {% if namespace == 'accounts' and url_name == 'mypage' %}data-active="true"{% endif %}><span aria-hidden="true">♙</span><small>マイページ</small></a>
+</nav>
+{% endwith %}

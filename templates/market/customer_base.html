@@ -1,11 +1,17 @@
 {% extends 'market/base.html' %}
 {% load static %}
-
-{% block body_class %}customer-page market-page{% endblock %}
+{% block body_class %}customer-page market-page v2-customer{% endblock %}
 {% block extra_css %}
   <link rel="stylesheet" href="{% static 'css/common.css' %}">
   {{ block.super }}
+  <link rel="stylesheet" href="{% static 'css/v2.css' %}">
 {% endblock %}
 {% block market_header %}{% include 'includes/customer_header.html' %}{% endblock %}
-{% block market_footer %}{% include 'includes/footer.html' %}{% endblock %}
-{% block extra_js %}<script defer src="{% static 'js/customer_nav.js' %}"></script>{% endblock %}
+{% block market_footer %}
+{% include 'includes/footer.html' %}
+{% include 'includes/customer_bottom_nav.html' %}
+{% endblock %}
+{% block extra_js %}
+<script defer src="{% static 'js/customer_nav.js' %}"></script>
+<script defer src="{% static 'js/v2.js' %}"></script>
+{% endblock %}

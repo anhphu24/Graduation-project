@@ -1,6 +1,19 @@
 {% extends 'market/customer_base.html' %}
-{% block market_title %}予約履歴{% endblock %}
+{% block market_title %}予約一覧{% endblock %}
 {% block market_content %}
-<div class="market-section-head"><div><p class="market-kicker">MY ORDERS</p><h1>予約履歴・状況</h1></div><a class="market-button market-button--secondary" href="{% url 'products:list' %}">商品を探す</a></div>
-{% if orders %}<div class="market-order-list">{% for order in orders %}<article class="market-order"><div><span class="market-status market-status--{{ order.status }}">{{ order.get_status_display }}</span><h2>{{ order.lot.product.name }}</h2><p>{{ order.lot.branch.chain.name }}・{{ order.lot.branch.name }}</p></div><dl><div><dt>数量</dt><dd>{{ order.quantity }}点</dd></div><div><dt>合計</dt><dd>{{ order.total_price|floatformat:0 }} {{ MARKET_CURRENCY }}</dd></div><div><dt>受取期限</dt><dd>{{ order.pickup_deadline|date:'Y/m/d H:i' }}</dd></div><div><dt>受取コード</dt><dd><code>{{ order.pickup_code }}</code></dd></div></dl>{% if order.status == 'reserved' %}<form method="post" action="{% url 'market:cancel' order.id %}">{% csrf_token %}<button class="market-danger" type="submit">予約をキャンセル</button></form>{% endif %}</article>{% endfor %}</div>{% else %}<div class="market-empty"><span aria-hidden="true">🧾</span><h2>予約はまだありません</h2><p>商品一覧からお得な商品を探してみましょう。</p></div>{% endif %}
+<div class="v2-page-title"><div><p class="v2-eyebrow">MY RESERVATIONS</p><h1>予約一覧</h1><p>受取コードをお店で提示して、商品をお受け取りください。</p></div><a class="v2-button v2-button--outline" href="{% url 'products:list' %}">商品を探す →</a></div>
+{% if orders %}
+<div class="v2-orders">
+{% for order in orders %}
+<article class="v2-order-card">
+ <div class="v2-order-card-header"><strong>予約番号：{{ order.id|slice:":8" }}</strong><span class="market-status market-status--{{ order.status }}">{{ order.get_status_display }}</span></div>
+ <div class="v2-order-card-body"><div><h2>{{ order.lot.product.name }} × {{ order.quantity }}</h2><p>{{ order.lot.branch.chain.name }} · {{ order.lot.branch.name }}</p></div><strong>¥{{ order.total_price|floatformat:0 }}</strong></div>
+ <dl><div><dt>受取期限</dt><dd>{{ order.pickup_deadline|date:'Y/m/d H:i' }}</dd></div><div><dt>受取コード</dt><dd><code>{{ order.pickup_code }}</code></dd></div></dl>
+ {% if order.status == 'reserved' %}<form method="post" action="{% url 'market:cancel' order.id %}" data-v2-once>{% csrf_token %}<button type="submit" class="v2-button v2-button--subtle">予約をキャンセル</button></form>{% endif %}
+</article>
+{% endfor %}
+</div>
+{% else %}
+<div class="v2-empty" role="status"><span aria-hidden="true">✓</span><h2>予約はまだありません</h2><p>気になる食品を見つけて、Food Rescueを始めましょう。</p><a class="v2-button v2-button--primary" href="{% url 'products:list' %}">商品を探す</a></div>
+{% endif %}
 {% endblock %}
